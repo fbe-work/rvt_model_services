@@ -1,33 +1,89 @@
 # rvt_model_services
-tools to process actions on revit models from cli
+python micro framework to process actions on revit models from cli/command line
 
-##it requires/is currently run on:
-  * cpython >= 3.5 (with non-standard modules: docopt, numpy, pandas, bokeh)
-  * [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell)
-  * Autodesk Revit®
-
-##how it works:
+## how it works:
   * you initialize it with a command to process_model.py specifying the task, project path and revit version and a timeout.
   * process_model.py will spin off a subprocess to write a journal file and addin according to your specified task and project.
-  * it will then run Revit according to journal file, opening a detached version of your model and run the specified action which in most cases will be [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
+  * it will then run Revit according to journal file, opening a detached version of your model and run the specified action like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
   * if the journal file cannot be run to completion the subproces is killed and an error is logged.
 
-##typical use cases(typicially recurring tasks run via schedule Task Scheduler):
+## it requires/is currently run on:
+  * cpython >= 3.6 (with additional modules: beautifulsoup4, bokeh, colorama, colorful, docopt, numpy, pandas, psutil)
+  * [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) >= 2017.03.07
+  * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2)
+  * see install_guide for help/further information.
+
+## how to get started:
+  * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats) in the steps:
+  * step 1:<br> 
+    setup in RPS:
+    in your targeted Revit version add a RPS button "model_qc":
+    "Add-Ins > RevitPythonShell > Configure", Add:
+    Name: model_qc, no group
+    Path: X:\your_path_to_the_cloned_repo\rvt_model_services\commands\qc\rps_qc_stats.py
+    restart Revit to check if the Button appears.
+    click on it to see if the message window appears and gives you a few stats on the current model.
+    
+  * step 2:<br> 
+    run process_model.py from command line:
+    now we can run the model_qc without even touching Revit and get interactive html graphs produced.
+    Compose a command consisting of the following:
+
+    your CPython interpreter<br>
+    your path to process_model.py<br>
+    command type<br>
+    project name<br>
+    path to the project Revit model<br>
+    revit model file name<br>
+    path to Revit executable to run it with<br>
+    Revit version number to open the file with<br>
+    a timeout for the process
+
+    so it could look like this:
+
+    "C:\Program Files\Python36\python.exe"<br>
+    D:/testrun/934_rvt_model_services/process_model.py<br>
+    qc<br>
+    123_N<br>
+    D:/testmodel/<br>
+    123_N.rvt<br>
+    "C:/Program Files/Autodesk/Revit Architecture 2016/Revit.exe"<br>
+    2016<br>
+    600<br>
+    
+    Just concatenate it (put it into one line).
+    Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.
+
+  * step 3:<br> 
+    for recurring tasks hook it up to Windows® task scheduler:
+    Open Task scheduler and create a new basic task<br>
+        - give it a name<br>
+        - set your interval rate e.g. daily<br>
+        - set your start time<br>
+        - action: start program:<br>
+            Program/Script:<br>
+                "C:\Program Files\Python36\python.exe"<br>
+            Add Arguments:<br>
+                D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/ 123_N.rvt "C:/Program Files/Autodesk/Revit Architecture 2016/Revit.exe" 2016 600 <br>
+        - Finish and test if it works: "Right-Click > Run"
+
+## typical use cases(recurring tasks run via schedule Task Scheduler):
   * extraction of qc data to be gathered in csv table and visualized on interactive html graphs using bokeh 
   * check on model corruption with audit canary
   * export of DWF, DWG, PDF or IFC (so far only DWF export implemented)
+  * export model warnings (API-less journal file warnings export)
 
-##currently implemented tasks:
+## currently implemented tasks:
   * qc: rvt model qc statistics
   * dwf: dwf sheet exports of sheet set "Auto_PDF_DWF"
+  * warn: model warnings export
 
-##limitations (typical limitations a journal file run process typically has):
+## limitations (typical limitations a journal file run process typically has):
   * no white spaces in model path
   * no non-ascii characters in model path
   * task will not run to completion if confronted with any unexpected messages
 
-##credits
-
+## credits
  * Frederic Beaupere (original version, maintainer)
  * Daren Thomas (creator of [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell))
  * Ehsan Iran-Nejad (creator of [pyRevit](https://github.com/eirannejad/pyRevit))
