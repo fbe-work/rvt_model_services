@@ -31,3 +31,8 @@ since rvt_model_services relies on a bunch of awesome packages here is an instal
 * regular install to the standard paths like these: 
     - C:\Program Files\Autodesk\Revit Architecture 2016
     - C:\Program Files\Autodesk\Revit 2017
+
+## not required but recommended:
+* install a console emulator that is fun to use and combine Python and windows prompt: 
+    - cmder console emulator download from: [cmder webpage](http://cmder.net/)
+    - xonsh (via pip install xonsh)
