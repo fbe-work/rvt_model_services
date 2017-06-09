@@ -14,7 +14,7 @@ python micro framework to process actions on revit models from cli/command line
   * see install_guide for help/further information.
 
 ## how to get started:
-  * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats) in the steps:
+  * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats) in three steps:
   * step 1:<br> 
     setup in RPS:   
     in your targeted Revit version add a RPS button "model_qc":
@@ -58,7 +58,7 @@ python micro framework to process actions on revit models from cli/command line
     
     ![cmder_screenshot][cmder_01]   
 
-  * step 3:<br> 
+  * step 3:<br>
     for recurring tasks hook it up to Windows® task scheduler:
     Open Task scheduler and create a new basic task<br>
         - give it a name<br>
@@ -80,17 +80,17 @@ python micro framework to process actions on revit models from cli/command line
 ## currently implemented tasks:
   * qc: rvt model qc statistics<br>
   
-  ![qc_elements_graph][qc_01] 
+    ![qc_elements_graph][qc_01] 
   
   * dwf: dwf sheet exports of sheet set "Auto_PDF_DWF"<br>
   * warnings: model warnings export<br>
   
-  ![warnings_graph][warnings_01] 
+    ![warnings_graph][warnings_01] 
   
   * pulse: bokeh graph showing the job log graphically(which project was process in what time, did it timeout -> red bar).<br>
     run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
     
-  ![pulse_graph][pulse_01] 
+    ![pulse_graph][pulse_01] 
 
 ## limitations (typical limitations a journal file run process typically has):
   * no white spaces in model path
@@ -104,6 +104,9 @@ python micro framework to process actions on revit models from cli/command line
  * Gui Talarico (creator of [revitpythonwrapper](https://github.com/gtalarico/revitpythonwrapper) and [revitapidocs](https://github.com/gtalarico/revitapidocs))
 
 note: If you are not on this list, but believe you should be, please contact me!
+
+## license
+[MIT](https://opensource.org/licenses/MIT)
 
 [cmder_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/cmder_01.png "cmder_screenshot"
 [qc_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/qc_01.png "qc_elements"
