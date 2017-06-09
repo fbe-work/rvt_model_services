@@ -53,6 +53,9 @@ python micro framework to process actions on revit models from cli/command line
     
     Just concatenate it (put it into one line).
     Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.
+    If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.
+    Here is how this looks on my screen:
+    ![cmder_screenshot][cmder_01]
 
   * step 3:<br> 
     for recurring tasks hook it up to Windows® task scheduler:
@@ -90,3 +93,5 @@ python micro framework to process actions on revit models from cli/command line
  * Gui Talarico (creator of [revitpythonwrapper](https://github.com/gtalarico/revitpythonwrapper) and [revitapidocs](https://github.com/gtalarico/revitapidocs))
 
 note: If you are not on this list, but believe you should be, please contact me!
+
+[cmder_01]: https://github.com/hdm-dt-fb/rvt_model_services/docs/img/cmder_01.png
