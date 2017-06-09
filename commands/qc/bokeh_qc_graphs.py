@@ -172,7 +172,7 @@ def update_graphs(project_code, html_path):
 
 
 if __name__ == "__main__":
-    """
+
     args = docopt(__doc__)
     project_code = args["<project_code>"]
     html_path = args["--html_path"]
@@ -186,6 +186,5 @@ if __name__ == "__main__":
     print(f"command args: {args}")
     if not html_path:
         html_path = qc_path
-    """
 
     update_graphs(project_code, html_path)
