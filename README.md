@@ -16,7 +16,7 @@ python micro framework to process actions on revit models from cli/command line
 ## how to get started:
   * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats) in the steps:
   * step 1:<br> 
-    setup in RPS:
+    setup in RPS:   
     in your targeted Revit version add a RPS button "model_qc":
     "Add-Ins > RevitPythonShell > Configure", Add:
     Name: model_qc, no group
@@ -51,10 +51,11 @@ python micro framework to process actions on revit models from cli/command line
     2016<br>
     600<br>
     
-    Just concatenate it (put it into one line).
-    Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.
+    Just concatenate it (put it into one line).<br>
+    Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.<br>
     If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.
     Here is how this looks on my screen:
+    
     ![cmder_screenshot][cmder_01]   
 
   * step 3:<br> 
@@ -77,9 +78,19 @@ python micro framework to process actions on revit models from cli/command line
   * export model warnings (API-less journal file warnings export)
 
 ## currently implemented tasks:
-  * qc: rvt model qc statistics
-  * dwf: dwf sheet exports of sheet set "Auto_PDF_DWF"
-  * warn: model warnings export
+  * qc: rvt model qc statistics<br>
+  
+  ![qc_elements_graph][qc_01] 
+  
+  * dwf: dwf sheet exports of sheet set "Auto_PDF_DWF"<br>
+  * warnings: model warnings export<br>
+  
+  ![warnings_graph][warnings_01] 
+  
+  * pulse: bokeh graph showing the job log graphically(which project was process in what time, did it timeout -> red bar).<br>
+    run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
+    
+  ![pulse_graph][pulse_01] 
 
 ## limitations (typical limitations a journal file run process typically has):
   * no white spaces in model path
@@ -95,3 +106,6 @@ python micro framework to process actions on revit models from cli/command line
 note: If you are not on this list, but believe you should be, please contact me!
 
 [cmder_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/cmder_01.png "cmder_screenshot"
+[qc_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/qc_01.png "qc_elements"
+[warnings_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/warnings_01.png "warnings_graph"
+[pulse_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/pulse_01.png "pulse_graph"
