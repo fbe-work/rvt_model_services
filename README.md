@@ -94,4 +94,4 @@ python micro framework to process actions on revit models from cli/command line
 
 note: If you are not on this list, but believe you should be, please contact me!
 
-[cmder_01]: https://github.com/hdm-dt-fb/rvt_model_services/tree/master/docs/img/cmder_01.png
+[cmder_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/cmder_01.png "cmder_screenshot"
