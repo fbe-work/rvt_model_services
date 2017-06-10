@@ -5,7 +5,7 @@ python micro framework to process actions on revit models from cli/command line
   * you initialize it with a command to process_model.py specifying the task, project path and revit version and a timeout.
   * process_model.py will spin off a subprocess to write a journal file and addin according to your specified task and project.
   * it will then run Revit according to journal file, opening a detached version of your model and run the specified action like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
-  * if the journal file cannot be run to completion the subproces is killed and an error is logged.
+  * if the journal file cannot be run to completion the subprocess is killed and an error is logged.
 
 ## it requires/is currently run on:
   * cpython >= 3.6 (with additional modules: beautifulsoup4, bokeh, colorama, colorful, docopt, numpy, pandas, psutil)
@@ -14,19 +14,20 @@ python micro framework to process actions on revit models from cli/command line
   * see install_guide for help/further information.
 
 ## how to get started:
-  * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats) in three steps:
-  * step 1:<br> 
+  * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats (qc meaning "quality check" in this context)) in three steps:
+  * step 1: create a revitpythonshell button<br> 
     setup in RPS:   
     in your targeted Revit version add a RPS button "model_qc":
     "Add-Ins > RevitPythonShell > Configure", Add:
-    Name: model_qc, no group
-    Path: X:\your_path_to_the_cloned_repo\rvt_model_services\commands\qc\rps_qc_stats.py
+    Name: qc_model, Group: rvt_model_services
+    Path: X:\your_path_to_the_cloned_repo\rvt_model_services\commands\qc\rps_qc_model.py
     restart Revit to check if the Button appears.
     click on it to see if the message window appears and gives you a few stats on the current model.
+    if that works, let's repeat the above steps for the command "dwf_export".
     
-  * step 2:<br> 
+  * step 2: run a qc read out from cli<br> 
     run process_model.py from command line:
-    now we can run the model_qc without even touching Revit and get interactive html graphs produced.
+    now we can run the qc_model without even touching Revit and get interactive html graphs produced.
     Compose a command consisting of the following:
 
     your CPython interpreter<br>
@@ -58,7 +59,7 @@ python micro framework to process actions on revit models from cli/command line
     
     ![cmder_screenshot][cmder_01]   
 
-  * step 3:<br>
+  * step 3: let task scheduler repeat your task<br>
     for recurring tasks hook it up to Windows® task scheduler:
     Open Task scheduler and create a new basic task<br>
         - give it a name<br>
@@ -78,12 +79,12 @@ python micro framework to process actions on revit models from cli/command line
   * export model warnings (API-less journal file warnings export)
 
 ## currently implemented tasks:
-  * qc: rvt model qc statistics<br>
+  * qc: rvt model qc statistics on workshared models<br>
   
     ![qc_elements_graph][qc_01] 
   
-  * dwf: dwf sheet exports of sheet set "Auto_PDF_DWF"<br>
-  * warnings: model warnings export<br>
+  * dwf: dwf sheet exports of sheet set "Auto_PDF_DWF" on workshared models<br>
+  * warnings: model warnings export on workshared models<br>
   
     ![warnings_graph][warnings_01] 
   
