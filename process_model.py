@@ -25,15 +25,18 @@ Options:
 from docopt import docopt
 import os.path as op
 import os
+import re
 import subprocess
+import importlib
 import psutil
 import time
 import logging
 import colorful
 import rps_xml
 import rvt_journal_writer
+from collections import defaultdict
 from commands.qc.bokeh_qc_graphs import update_graphs
-from commands.warn.bokeh_warnings_graphs import update_json_and_bokeh
+from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
 
 # TODO write model not found to log -> to main log from logging
 # TODO write log header if log not exists with logging module?
@@ -44,6 +47,63 @@ from commands.warn.bokeh_warnings_graphs import update_json_and_bokeh
 def rvt_journal_run(program, journal_file):
     return psutil.Popen([program, journal_file], cwd=root_dir,
                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+def get_rvt_file_version(rvt_file):
+    with open(rvt_file, "rb") as rvt:
+        for i, line in enumerate(rvt.readlines()):
+            # print("--------length of line {}:{}".format(i, len(line)))
+            if len(line) < 200:
+                dec_line = line.decode("utf-16be", "ignore")
+                # print(dec_line)
+                if dec_line.startswith("Revit Build:"):
+                    rvt_build_line = dec_line
+            if i == 30:
+                break
+    # print("{}\nfound rvt build:\n{}".format(rvt_file, rvt_build_line))
+    pattern = re.compile(r"\d{4}")
+    rvt_file_version = re.search(pattern, rvt_build_line.split(":")[1])[0]
+    print("found rvt version: {}".format(rvt_version))
+    return rvt_file_version
+
+
+def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_code):
+    com_dict = defaultdict()
+    found_dir = False
+    for directory in os.scandir("commands"):
+        command_name = directory.name
+        # print(command_name)
+        if search_command == command_name:
+            found_dir = True
+            # print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
+            if op.exists(f"{commands_dir}/{command_name}/__init__.py"):
+                mod = importlib.machinery.SourceFileLoader(command_name,
+                                                           "commands/{0}/__init__.py".format(command_name)).load_module()
+            else:
+                print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
+                exit()
+            if "register" in dir(mod):
+                if mod.register["name"] == command_name:
+                    # print("command_name found!")
+                    if "get_rps_button" in mod.register:
+                        # print("needs rps button")
+                        button_name = mod.register["get_rps_button"]
+                        rps_button = rps_xml.get_rps_button(rps_xml.find_xml_command(rvt_ver, ""), button_name)
+                        com_dict[command_name] = rps_button
+                    if "rvt_journal_writer" in mod.register:
+                        # print("needs rvt_journal_writer")
+                        if mod.register["rvt_journal_writer"] == "warnings_export_command":
+                            warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
+                            warn_cmd = rvt_journal_writer.warnings_export_command(rvt_journal_writer.
+                                                                                  export_warnings_template,
+                                                                                  warnings_command_dir,
+                                                                                  project_code,
+                                                                                  ),
+                            com_dict[command_name] = warn_cmd[0]
+    if not found_dir:
+        print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
+        exit()
+    return com_dict
 
 
 print(colorful.bold_blue("+process model job control started"))
@@ -67,7 +127,7 @@ warnings_dir = op.join(root_dir, "warnings" + op.sep)
 journals_dir = op.join(root_dir, "journals")
 commands_dir = op.join(root_dir, "commands")
 qc_dir = op.join(commands_dir, "qc")
-warn_dir = op.join(commands_dir, "warn")
+warn_dir = op.join(commands_dir, "warnings")
 
 print(colorful.bold_orange('-detected following path structure:'))
 print(f' ROOT_DIR:     {root_dir}')
@@ -75,7 +135,6 @@ print(f' LOG_DIR:      {log_dir}')
 print(f' WARNINGS_DIR: {warnings_dir}')
 print(f' JOURNALS_DIR: {journals_dir}')
 print(f' COMMANDS_DIR: {commands_dir}')
-print(f' QC_DIR:       {qc_dir}')
 
 rvt_model_path = model_path + model_file_name
 journal_file_path = op.join(journals_dir, project_code + ".txt")
@@ -117,16 +176,10 @@ os.environ["RVT_QC_PRJ"] = project_code
 os.environ["RVT_QC_PATH"] = rvt_model_path
 os.environ["RVT_LOG_PATH"] = log_dir
 
-if model_exists:
+cmd_dict = command_detection(command, commands_dir, rvt_version, root_dir, project_code)
+print(cmd_dict)
 
-    cmd_dict = {"qc": rps_xml.get_rps_button(rps_xml.find_xml_command(rvt_version, ""), "qc_model"),
-                "dwf": rps_xml.get_rps_button(rps_xml.find_xml_command(rvt_version, ""), "dwf_export"),
-                "audit": rvt_journal_writer.audit,
-                "warnings": rvt_journal_writer.warnings_export_command(rvt_journal_writer.export_warnings_template,
-                                                                       warnings_dir,
-                                                                       project_code,
-                                                                       ),
-                }
+if model_exists:
 
     if command == "audit":
         journal_template = rvt_journal_writer.audit_detach_template
