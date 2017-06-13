@@ -27,7 +27,7 @@ commands/*
 !commands/qc/
 !commands/dwf/
 !commands/pulse/
-!commands/warn/
+!commands/warnings/
 
 # rvt_model_services logs
 logs/*
@@ -43,8 +43,8 @@ commands/pulse/*.html
 # bokeh qc graph html test pages
 commands/qc/*.html
 
-# bokeh warn graph html test pages
-commands/warn/*.html
+# bokeh warnings graph html test pages
+commands/warnings/*.html
 
 # rvt_model_services journals files
 journals/*
