@@ -40,7 +40,6 @@ from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
 
 # TODO write model not found to log -> to main log from logging
 # TODO write log header if log not exists with logging module?
-# TODO implement audit option
 # TODO make rvt_pulse available from process model?
 
 
@@ -100,13 +99,14 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                                                                                   project_code,
                                                                                   ),
                             com_dict[command_name] = warn_cmd[0]
+                        elif mod.register["rvt_journal_writer"] == "audit":
+                            com_dict[command_name] = "' "
     if not found_dir:
         print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
         exit()
     return com_dict
 
 
-print(colorful.bold_blue("+process model job control started"))
 args = docopt(__doc__)
 
 command = args["<command>"]
@@ -128,6 +128,8 @@ journals_dir = op.join(root_dir, "journals")
 commands_dir = op.join(root_dir, "commands")
 qc_dir = op.join(commands_dir, "qc")
 warn_dir = op.join(commands_dir, "warnings")
+
+print(colorful.bold_blue("+process model job control started"))
 
 print(colorful.bold_orange('-detected following path structure:'))
 print(f' ROOT_DIR:     {root_dir}')
@@ -177,7 +179,7 @@ os.environ["RVT_QC_PATH"] = rvt_model_path
 os.environ["RVT_LOG_PATH"] = log_dir
 
 cmd_dict = command_detection(command, commands_dir, rvt_version, root_dir, project_code)
-print(cmd_dict)
+# print(cmd_dict)
 
 if model_exists:
 
