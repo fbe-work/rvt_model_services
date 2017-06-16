@@ -28,6 +28,7 @@ commands/*
 !commands/dwf/
 !commands/pulse/
 !commands/warnings/
+!commands/audit/
 
 # rvt_model_services logs
 logs/*
