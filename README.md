@@ -23,7 +23,6 @@ python micro framework to process actions on revit models from cli/command line
     Path: X:\your_path_to_the_cloned_repo\rvt_model_services\commands\qc\rps_qc_model.py
     restart Revit to check if the Button appears.
     click on it to see if the message window appears and gives you a few stats on the current model.
-    if that works, let's repeat the above steps for the command "dwf_export".
     
   * step 2: run a qc read out from cli<br> 
     run process_model.py from command line:
