@@ -69,7 +69,7 @@ def get_rvt_file_version(rvt_file):
 def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_code):
     com_dict = defaultdict()
     found_dir = False
-    for directory in os.scandir("commands"):
+    for directory in os.scandir(commands_dir):
         command_name = directory.name
         # print(command_name)
         if search_command == command_name:
