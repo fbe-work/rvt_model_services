@@ -76,8 +76,9 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
             found_dir = True
             # print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
             if op.exists(f"{commands_dir}/{command_name}/__init__.py"):
-                mod = importlib.machinery.SourceFileLoader(command_name,
-                                                           "commands/{0}/__init__.py".format(command_name)).load_module()
+                mod = importlib.machinery.SourceFileLoader(command_name, op.join(commands_dir,
+                                                                                 command_name,
+                                                                                 "__init__.py")).load_module()
             else:
                 print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
                 exit()
