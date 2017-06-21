@@ -32,6 +32,7 @@ import psutil
 import time
 import logging
 import colorful
+import olefile
 import rps_xml
 import rvt_journal_writer
 from collections import defaultdict
@@ -41,6 +42,7 @@ from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
 # TODO write model not found to log -> to main log from logging
 # TODO write log header if log not exists with logging module?
 # TODO make rvt_pulse available from process model?
+# TODO audit parse journal files post-process to discover potential model corruption
 
 
 def rvt_journal_run(program, journal_file):
@@ -49,20 +51,10 @@ def rvt_journal_run(program, journal_file):
 
 
 def get_rvt_file_version(rvt_file):
-    with open(rvt_file, "rb") as rvt:
-        for i, line in enumerate(rvt.readlines()):
-            # print("--------length of line {}:{}".format(i, len(line)))
-            if len(line) < 200:
-                dec_line = line.decode("utf-16be", "ignore")
-                # print(dec_line)
-                if dec_line.startswith("Revit Build:"):
-                    rvt_build_line = dec_line
-            if i == 30:
-                break
-    # print("{}\nfound rvt build:\n{}".format(rvt_file, rvt_build_line))
+    rvt_ole = olefile.OleFileIO(rvt_file)
+    file_info = rvt_ole.openstream("BasicFileInfo").read().decode("utf-16le", "ignore")
     pattern = re.compile(r"\d{4}")
-    rvt_file_version = re.search(pattern, rvt_build_line.split(":")[1])[0]
-    print("found rvt version: {}".format(rvt_version))
+    rvt_file_version = re.search(pattern, file_info)[0]
     return rvt_file_version
 
 
@@ -130,7 +122,7 @@ commands_dir = op.join(root_dir, "commands")
 qc_dir = op.join(commands_dir, "qc")
 warn_dir = op.join(commands_dir, "warnings")
 
-print(colorful.bold_blue("+process model job control started"))
+print(colorful.bold_blue(f"+process model job control started with command: {command}"))
 
 print(colorful.bold_orange('-detected following path structure:'))
 print(f' ROOT_DIR:     {root_dir}')
@@ -220,9 +212,14 @@ if model_exists:
 
     print(f" number of child processes: {len(run_proc.children())}")
     print(f" first child process: {child_pid} - {proc_name_colored}")
+
+    rvt_model_version = get_rvt_file_version(rvt_model_path)
+    print(colorful.bold_orange(f"-detected following model revit version: {rvt_model_version}"))
+
     print(colorful.bold_orange("-countdown:"))
     print(f" timeout until termination of process: {child_pid} - {proc_name_colored}:")
 
+    # the main timeout loop
     for sec in range(timeout):
         time.sleep(1)
         print(f" {str(timeout-sec).zfill(4)} seconds", end="\r")
@@ -245,9 +242,12 @@ if model_exists:
                 if command != "warnings":
                     logging.warning(f"{project_code};{current_proc_hash};1")
 
+    # post loop processing updating graphs, parsing journal files
     if command == "warnings":
         update_json_and_bokeh(project_code, html_path)
         logging.info(f"{project_code};{current_proc_hash};0")
+    elif command == "audit":
+        pass
 
 else:
     print("model not found")
