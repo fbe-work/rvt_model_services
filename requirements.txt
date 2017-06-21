@@ -6,3 +6,4 @@ docopt==0.6.2
 numpy==1.12.1
 pandas==0.19.2
 psutil==5.2.2
+olefile=0.44
