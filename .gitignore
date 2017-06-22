@@ -47,7 +47,7 @@ commands/qc/*.html
 # bokeh warnings graph html test pages
 commands/warnings/*.html
 
-# bokeh warnings graph html test pages
+# bokeh audit graph html test pages
 commands/audit/*.html
 
 # rvt_model_services journals files
