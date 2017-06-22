@@ -51,11 +51,14 @@ def rvt_journal_run(program, journal_file):
 
 
 def get_rvt_file_version(rvt_file):
-    rvt_ole = olefile.OleFileIO(rvt_file)
-    file_info = rvt_ole.openstream("BasicFileInfo").read().decode("utf-16le", "ignore")
-    pattern = re.compile(r"\d{4}")
-    rvt_file_version = re.search(pattern, file_info)[0]
-    return rvt_file_version
+    if olefile.isOleFile(rvt_file):
+        rvt_ole = olefile.OleFileIO(rvt_file)
+        file_info = rvt_ole.openstream("BasicFileInfo").read().decode("utf-16le", "ignore")
+        pattern = re.compile(r" \d{4} ")
+        rvt_file_version = re.search(pattern, file_info)[0].strip()
+        return rvt_file_version
+    else:
+        print(f"file does not appear to be an ole file: {rvt_file}")
 
 
 def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_code):
@@ -214,7 +217,7 @@ if model_exists:
     print(f" first child process: {child_pid} - {proc_name_colored}")
 
     rvt_model_version = get_rvt_file_version(rvt_model_path)
-    print(colorful.bold_orange(f"-detected following model revit version: {rvt_model_version}"))
+    print(colorful.bold_orange(f"-detected model revit version: {rvt_model_version}"))
 
     print(colorful.bold_orange("-countdown:"))
     print(f" timeout until termination of process: {child_pid} - {proc_name_colored}:")
