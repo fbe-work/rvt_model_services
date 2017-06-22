@@ -16,6 +16,7 @@ since rvt_model_services relies on a bunch of awesome packages here is an instal
     python -m pip install numpy==1.12.1<br>
     python -m pip install pandas==0.19.2<br>
     python -m pip install psutil==5.2.2<br>
+    python -m pip install olefile=0.44<br>
 * check afterwards with a "pip list" if your installation process was successful<br>
 * optionally you could set this up in an virtual environment, but that is beyond the scope of this guide.
 
