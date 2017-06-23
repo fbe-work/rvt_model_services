@@ -14,7 +14,9 @@ Arguments:
     model_file_name     revit model file name
     rvt_version_path    revit .exe path of appropriate version like: 
                         "C:/Program Files/Autodesk/Revit Architecture 2015/Revit.exe"
+                        soon depracted: replaced by autodetection
     rvt_version         the revit main version number like: 2015
+                        soon depracted: replaced by autodetection
     timeout             timeout in seconds before revit process gets terminated
 
 Options:
@@ -26,6 +28,7 @@ from docopt import docopt
 import os.path as op
 import os
 import re
+import winreg
 import subprocess
 import importlib
 import psutil
@@ -45,12 +48,53 @@ from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
 # TODO audit parse journal files post-process to discover potential model corruption
 
 
-def rvt_journal_run(program, journal_file):
-    return psutil.Popen([program, journal_file], cwd=root_dir,
+def get_paths_dict():
+    """
+    Maps path structure into a dict.
+    :return:dict: path lookup dictionary
+    """
+    path_dict = defaultdict()
+
+    current_dir = op.dirname(op.abspath(__file__))
+    root_dir = current_dir
+    journals_dir = op.join(root_dir, "journals")
+    logs_dir = op.join(root_dir, "logs")
+    warnings_dir = op.join(root_dir, "warnings" + op.sep)
+    commands_dir = op.join(root_dir, "commands")
+    com_warnings_dir = op.join(commands_dir, "warnings")
+    com_qc_dir = op.join(commands_dir, "qc")
+
+    path_dict["root_dir"] = root_dir
+    path_dict["logs_dir"] = logs_dir
+    path_dict["warnings_dir"] = warnings_dir
+    path_dict["journals_dir"] = journals_dir
+    path_dict["commands_dir"] = commands_dir
+    path_dict["com_warnings_dir"] = com_warnings_dir
+    path_dict["com_qc_dir"] = com_qc_dir
+
+    for pathname in path_dict.keys():
+        print(" {} - {}".format(pathname, path_dict[pathname]))
+
+    return path_dict
+
+
+def rvt_journal_run(program, journal_file, cwd):
+    """
+    Starts an instance of rvt processing the instructions of the journal file.
+    :param program: executable to start
+    :param journal_file: journal file path as command argument
+    :return:
+    """
+    return psutil.Popen([program, journal_file], cwd=cwd,
                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 def get_rvt_file_version(rvt_file):
+    """
+    Seraches for the BasiFileInfo stream in the rvt file ole structure.
+    :param rvt_file: model file path
+    :return:str: rvt_file_version
+    """
     if olefile.isOleFile(rvt_file):
         rvt_ole = olefile.OleFileIO(rvt_file)
         file_info = rvt_ole.openstream("BasicFileInfo").read().decode("utf-16le", "ignore")
@@ -61,7 +105,56 @@ def get_rvt_file_version(rvt_file):
         print(f"file does not appear to be an ole file: {rvt_file}")
 
 
+def installed_rvt_detection(search_version):
+    """
+    Finds install path of rvt versions in win registry
+    :param search_version: major version number
+    :return:str: install path
+    """
+    search_version = str(search_version)
+    reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
+    soft_uninstall = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    install_keys = winreg.OpenKey(reg, soft_uninstall)
+
+    install_location = "InstallLocation"
+    rvt_reg_keys = {}
+    rvt_install_paths = {}
+
+    index = 0
+    while True:
+        try:
+            adsk_pattern = r"Autodesk Revit ?(\S* )?\d{4}$"
+            current_key = winreg.EnumKey(install_keys, index)
+            if re.match(adsk_pattern, current_key):
+                rvt_reg_keys[current_key] = index
+                # print([current_key, index])
+        except OSError:
+            break
+        index += 1
+
+    for rk in rvt_reg_keys.keys():
+        version_pattern = r"\d{4}"
+        rvt_install_version = re.search(version_pattern, rk)[0]
+        reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
+        rvt_reg = winreg.OpenKey(reg, soft_uninstall + "\\" + rk)
+        # print([rk, rvt_reg, install_location])
+        exe_location = winreg.QueryValueEx(rvt_reg, install_location)[0] + "Revit.exe"
+        rvt_install_paths[rvt_install_version] = exe_location
+
+    return rvt_install_paths[search_version]
+
+
 def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_code):
+    """
+    Searches command paths for register dict in __init__.py in command roots to
+    prepare appropriate command strings to be inserted into the journal file
+    :param search_command: command name to look up
+    :param commands_dir: commands directory
+    :param rvt_ver: rvt version
+    :param root_dir:
+    :param project_code:
+    :return:
+    """
     com_dict = defaultdict()
     found_dir = False
     for directory in os.scandir(commands_dir):
@@ -114,44 +207,31 @@ rvt_version = args["<revit_version>"]
 timeout = int(args["<timeout>"])
 html_path = args["--html_path"]
 
+print(colorful.bold_blue(f"+process model job control started with command: {command}"))
+print(colorful.bold_orange('-detected following path structure:'))
+paths = get_paths_dict()
+
 semicolon_concat_args = ";".join([f"{k}={v}" for k, v in args.items()])
 comma_concat_args = ",".join([f"{k}={v}" for k, v in args.items()])
 
-root_dir = op.dirname(op.abspath(__file__))
-log_dir = op.join(root_dir, "logs")
-warnings_dir = op.join(root_dir, "warnings" + op.sep)
-journals_dir = op.join(root_dir, "journals")
-commands_dir = op.join(root_dir, "commands")
-qc_dir = op.join(commands_dir, "qc")
-warn_dir = op.join(commands_dir, "warnings")
-
-print(colorful.bold_blue(f"+process model job control started with command: {command}"))
-
-print(colorful.bold_orange('-detected following path structure:'))
-print(f' ROOT_DIR:     {root_dir}')
-print(f' LOG_DIR:      {log_dir}')
-print(f' WARNINGS_DIR: {warnings_dir}')
-print(f' JOURNALS_DIR: {journals_dir}')
-print(f' COMMANDS_DIR: {commands_dir}')
-
 rvt_model_path = model_path + model_file_name
-journal_file_path = op.join(journals_dir, project_code + ".txt")
+journal_file_path = op.join(paths["journals_dir"], project_code + ".txt")
 model_exists = op.exists(rvt_model_path)
 
 if not html_path:
     if command == "qc":
-        html_path = qc_dir
+        html_path = paths["com_qc_dir"]
     elif command == "warnings":
-        html_path = warn_dir
+        html_path = paths["com_warnings_dir"]
 elif not os.path.exists(html_path):
     if command == "qc":
-        html_path = qc_dir
-        print(f"your specified html path was not found - html graph will be exported to {qc_dir} instead")
+        html_path = paths["com_qc_dir"]
+        print(f"your specified html path was not found - will export html graph to {paths['com_qc_dir']} instead")
     elif command == "warnings":
-        html_path = warn_dir
-        print(f"your specified html path was not found - html graph will be exported to {warn_dir} instead")
+        html_path = paths["com_warnings_dir"]
+        print(f"your specified html path was not found - will export html graph to {paths['com_warnings_dir']} instead")
 
-job_logging = op.join(log_dir, "job_logging.csv")
+job_logging = op.join(paths["logs_dir"], "job_logging.csv")
 header_logging = "time_stamp;level;project;process_hash;error_code;args\n"
 if not op.exists(job_logging):
     with open(job_logging, "w") as logging_file:
@@ -172,9 +252,9 @@ logging.info(f"{project_code};{current_proc_hash};;{comma_concat_args};{'task_st
 
 os.environ["RVT_QC_PRJ"] = project_code
 os.environ["RVT_QC_PATH"] = rvt_model_path
-os.environ["RVT_LOG_PATH"] = log_dir
+os.environ["RVT_LOG_PATH"] = paths["logs_dir"]
 
-cmd_dict = command_detection(command, commands_dir, rvt_version, root_dir, project_code)
+cmd_dict = command_detection(command, paths["commands_dir"], rvt_version, paths["root_dir"], project_code)
 # print(cmd_dict)
 
 if model_exists:
@@ -191,13 +271,13 @@ if model_exists:
                                                cmd_dict[command],
                                                )
 
-    addin_file_path = op.join(journals_dir, "RevitPythonShell.addin")
+    addin_file_path = op.join(paths["journals_dir"], "RevitPythonShell.addin")
     rps_addin = rvt_journal_writer.write_addin(addin_file_path,
                                                rvt_journal_writer.rps_addin_template,
                                                rvt_version,
                                                )
 
-    run_proc = rvt_journal_run(rvt_version_path, journal_file_path)
+    run_proc = rvt_journal_run(rvt_version_path, journal_file_path, paths["root_dir"])
     run_proc_id = run_proc.pid
     run_proc_name = run_proc.name()
 
@@ -219,7 +299,11 @@ if model_exists:
     rvt_model_version = get_rvt_file_version(rvt_model_path)
     print(colorful.bold_orange(f"-detected model revit version: {rvt_model_version}"))
 
-    print(colorful.bold_orange("-countdown:"))
+    rvt_install_path = installed_rvt_detection(rvt_model_version)
+    print(colorful.bold_orange("-detected installed revit at path:"))
+    print(f" {rvt_install_path}")
+
+    print(colorful.bold_orange("-process countdown:"))
     print(f" timeout until termination of process: {child_pid} - {proc_name_colored}:")
 
     # the main timeout loop
@@ -256,3 +340,7 @@ else:
     print("model not found")
 
 print(colorful.bold_blue("+process model job control script ended"))
+
+if args["<revit_version_path>"] or args["<revit_version>"]:
+    print(colorful.bold_red("!!warning!!: <revit_version_path> and <revit_version> will be \n"
+                            "replaced by autodetect functions and depracted in 0.3!"))
