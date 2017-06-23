@@ -59,7 +59,7 @@ print(html_output_path)
 
 csv_path = op.join(paths["logs_dir"], "job_logging.csv")
 
-color_dict = {0.0: "green", 1.0: "red"}
+color_dict = {0.0: "green", 1.0: "orange"}
 
 pd.set_option('display.width', 1800)
 df = pd.read_csv(csv_path, sep=";", index_col=False)
