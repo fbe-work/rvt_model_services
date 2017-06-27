@@ -38,6 +38,7 @@ import colorful
 import olefile
 import rps_xml
 import rvt_journal_writer
+import rvt_journal_parser
 from collections import defaultdict
 from commands.qc.bokeh_qc_graphs import update_graphs
 from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
@@ -232,7 +233,7 @@ elif not os.path.exists(html_path):
         print(f"your specified html path was not found - will export html graph to {paths['com_warnings_dir']} instead")
 
 job_logging = op.join(paths["logs_dir"], "job_logging.csv")
-header_logging = "time_stamp;level;project;process_hash;error_code;args\n"
+header_logging = "time_stamp;level;project;process_hash;error_code;args;comments\n"
 if not op.exists(job_logging):
     with open(job_logging, "w") as logging_file:
         logging_file.write(header_logging)
@@ -338,9 +339,11 @@ if model_exists:
 
 else:
     print("model not found")
+    logging.warning(f"{project_code};{current_proc_hash};1;;{'model not found'}")
 
 print(colorful.bold_blue("+process model job control script ended"))
 
+# depract info
 if args["<revit_version_path>"] or args["<revit_version>"]:
-    print(colorful.bold_red("!!warning!!: <revit_version_path> and <revit_version> will be \n"
+    print(colorful.bold_red("\n!!warning!!: <revit_version_path> and <revit_version> will be \n"
                             "replaced by autodetect functions and depracted in 0.3!"))
