@@ -197,6 +197,14 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
     return com_dict
 
 
+def get_child_journal(process):
+    open_files = process.open_files()
+    for proc_file in open_files:
+        file_name = op.basename(proc_file.path)
+        if file_name.startswith("journal"):
+            return proc_file.path
+
+
 args = docopt(__doc__)
 
 command = args["<command>"]
@@ -307,6 +315,8 @@ if model_exists:
     print(colorful.bold_orange("-process countdown:"))
     print(f" timeout until termination of process: {child_pid} - {proc_name_colored}:")
 
+    log_journal = get_child_journal(child_proc)
+
     # the main timeout loop
     for sec in range(timeout):
         time.sleep(1)
@@ -331,11 +341,14 @@ if model_exists:
                     logging.warning(f"{project_code};{current_proc_hash};1")
 
     # post loop processing updating graphs, parsing journal files
+    print(colorful.bold_orange("-post process:"))
+    print(f" proc open journal for post process parsing: {log_journal}")
     if command == "warnings":
         update_json_and_bokeh(project_code, html_path)
         logging.info(f"{project_code};{current_proc_hash};0")
     elif command == "audit":
-        pass
+        log_journal_result = rvt_journal_parser.read_journal(log_journal)
+        print(f" detected post process parsing: {log_journal_result}")
 
 else:
     print("model not found")
