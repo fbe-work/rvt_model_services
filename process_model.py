@@ -82,12 +82,18 @@ def get_paths_dict():
 def rvt_journal_run(program, journal_file, cwd):
     """
     Starts an instance of rvt processing the instructions of the journal file.
+    :param cwd: work directory for rvt journal exec
     :param program: executable to start
     :param journal_file: journal file path as command argument
     :return:
     """
     return psutil.Popen([program, journal_file], cwd=cwd,
                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+def exit_with_log(message):
+    logging.warning(f"{project_code};{current_proc_hash};1;;{message}")
+    exit()
 
 
 def get_rvt_file_version(rvt_file):
@@ -170,7 +176,7 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                                                                                  "__init__.py")).load_module()
             else:
                 print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
-                exit()
+                exit_with_log('__init__.py in command directory not found')
             if "register" in dir(mod):
                 if mod.register["name"] == command_name:
                     # print("command_name found!")
@@ -193,7 +199,8 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                             com_dict[command_name] = "' "
     if not found_dir:
         print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
-        exit()
+        exit_with_log('command directory not found')
+
     return com_dict
 
 
@@ -220,7 +227,6 @@ print(colorful.bold_blue(f"+process model job control started with command: {com
 print(colorful.bold_orange('-detected following path structure:'))
 paths = get_paths_dict()
 
-semicolon_concat_args = ";".join([f"{k}={v}" for k, v in args.items()])
 comma_concat_args = ",".join([f"{k}={v}" for k, v in args.items()])
 
 rvt_model_path = model_path + model_file_name
@@ -306,16 +312,16 @@ if model_exists:
     print(f" first child process: {child_pid} - {proc_name_colored}")
 
     rvt_model_version = get_rvt_file_version(rvt_model_path)
-    print(colorful.bold_orange(f"-detected model revit version: {rvt_model_version}"))
-
+    print(colorful.bold_orange(f"-detected revit: {rvt_model_version}"))
     rvt_install_path = installed_rvt_detection(rvt_model_version)
-    print(colorful.bold_orange("-detected installed revit at path:"))
-    print(f" {rvt_install_path}")
+    print(f" version:{rvt_model_version} at path: {rvt_install_path}")
 
     print(colorful.bold_orange("-process countdown:"))
     print(f" timeout until termination of process: {child_pid} - {proc_name_colored}:")
 
     log_journal = get_child_journal(child_proc)
+    return_code = None
+    return_logging = logging.info
 
     # the main timeout loop
     for sec in range(timeout):
@@ -325,7 +331,8 @@ if model_exists:
 
         if poll == 0:
             print(colorful.bold_green(f" {poll} - revit finished!"))
-            logging.info(f"{project_code};{current_proc_hash};0")
+            return_code = "0"
+            return_logging = logging.info
 
             if command == "qc":
                 update_graphs(project_code, html_path)
@@ -337,18 +344,28 @@ if model_exists:
             if not poll:
                 print(colorful.bold_red(f" kill child process now: {child_pid}"))
                 child_proc.kill()
+                # retrieving warnings will always result in a terminated rvt session.
+                # expected behavior -> ret: 0 for warnings
                 if command != "warnings":
-                    logging.warning(f"{project_code};{current_proc_hash};1")
+                    return_code = "1"
+                    return_logging = logging.warning
+                else:
+                    return_code = "0"
+                    return_logging = logging.info
 
     # post loop processing updating graphs, parsing journal files
     print(colorful.bold_orange("-post process:"))
-    print(f" proc open journal for post process parsing: {log_journal}")
+    print(f" process open journal for post process parsing:\n {log_journal}")
+    log_journal_result = rvt_journal_parser.read_journal(log_journal)
+    log_journal_result = ",".join([f"{k}: {v}" for k, v in log_journal_result.items()])
+    if log_journal_result:
+        print(f" detected post process parsing: {log_journal_result}")
+
     if command == "warnings":
         update_json_and_bokeh(project_code, html_path)
-        logging.info(f"{project_code};{current_proc_hash};0")
-    elif command == "audit":
-        log_journal_result = rvt_journal_parser.read_journal(log_journal)
-        print(f" detected post process parsing: {log_journal_result}")
+
+    # write log according to return code
+    return_logging(f"{project_code};{current_proc_hash};{return_code};;{log_journal_result}")
 
 else:
     print("model not found")
