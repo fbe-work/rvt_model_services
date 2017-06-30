@@ -8,8 +8,10 @@ import os.path as op
 
 model_corrupt = 'orrupt'
 missing_links = 'TaskDialog "Revit could not find or read'
+circular_link_conflict = 'TaskDialog_Circular_Link_Conflict'
 key_phrases = {missing_links: "missing_links",
                model_corrupt: "corrupt",
+               circular_link_conflict: "circular links",
                }
 
 
