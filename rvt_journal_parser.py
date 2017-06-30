@@ -26,14 +26,10 @@ def read_journal(journal_path):
         journal_name = op.basename(journal_path)
         for line in journal:
             decoded_line = line.decode("latin1", "ignore")
-            if model_corrupt in decoded_line:
-                print("!!_Corrupt_Model_!!")
-                print(journal_path)
-                print(decoded_line)
-                detected[journal_name] = key_phrases[model_corrupt]
-            if missing_links in decoded_line:
-                print("!!_Missing_Links_!!")
-                print(journal_path)
-                print(decoded_line)
-                detected[journal_name] = key_phrases[missing_links]
+            for key_phrase in key_phrases:
+                if key_phrase in decoded_line:
+                    print(f"!!_found:{key_phrases[key_phrase]}_!!")
+                    print(journal_path)
+                    print(decoded_line)
+                    detected[journal_name] = key_phrases[key_phrase]
     return detected
