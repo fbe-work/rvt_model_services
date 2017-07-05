@@ -14,9 +14,9 @@ Arguments:
     model_file_name     revit model file name
     rvt_version_path    revit .exe path of appropriate version like: 
                         "C:/Program Files/Autodesk/Revit Architecture 2015/Revit.exe"
-                        soon depracted: replaced by autodetection
+                        soon deprecated: replaced by autodetection
     rvt_version         the revit main version number like: 2015
-                        soon depracted: replaced by autodetection
+                        soon deprecated: replaced by autodetection
     timeout             timeout in seconds before revit process gets terminated
 
 Options:
@@ -92,6 +92,11 @@ def rvt_journal_run(program, journal_file, cwd):
 
 
 def exit_with_log(message):
+    """
+    Ends the whole script with a warning.
+    :param message:
+    :return:
+    """
     logging.warning(f"{project_code};{current_proc_hash};1;;{message}")
     exit()
 
@@ -373,7 +378,7 @@ else:
 
 print(colorful.bold_blue("+process model job control script ended"))
 
-# depract info
+# deprecation info
 if args["<revit_version_path>"] or args["<revit_version>"]:
     print(colorful.bold_red("\n!!warning!!: <revit_version_path> and <revit_version> will be \n"
-                            "replaced by autodetect functions and depracted in 0.3!"))
+                            "replaced by autodetect functions and deprecated in 0.3!"))
