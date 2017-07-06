@@ -89,29 +89,30 @@ for project in sorted(all_projects):
                            (df_paired["args"].str.contains("qc"))
                            ].copy()
 
-    print(df_project.head(9))
+    if not df_project.empty:
+        print(df_project.head(9))
 
-    # Bar.help.builders[0].glyph.line_alpha = 0.0 # no effect?
-    plot = Bar(df_project.tail(60), "minutes", values="duration", color="color", title=project,
-               background_fill_alpha=0, border_fill_alpha=0, outline_line_alpha=0,
-               xgrid=False, legend=None, toolbar_location=None,
-               width=900, height=400
-               )
+        # Bar.help.builders[0].glyph.line_alpha = 0.0 # no effect?
+        plot = Bar(df_project.tail(60), "minutes", values="duration", color="color", title=project,
+                   background_fill_alpha=0, border_fill_alpha=0, outline_line_alpha=0,
+                   xgrid=False, legend=None, toolbar_location=None,
+                   width=900, height=400
+                   )
 
-    # plot styling
-    plot.axis.axis_label = None
-    plot.xaxis.axis_label = None
-    plot.axis.major_tick_line_color = None
-    plot.axis.minor_tick_line_color = None
-    # plot.xaxis[0].ticker.desired_num_ticks = 5
-    # plot.xaxis.major_label_text_alpha = 0
-    plot.xaxis.major_label_orientation = pi / 2
+        # plot styling
+        plot.axis.axis_label = None
+        plot.xaxis.axis_label = None
+        plot.axis.major_tick_line_color = None
+        plot.axis.minor_tick_line_color = None
+        # plot.xaxis[0].ticker.desired_num_ticks = 5
+        # plot.xaxis.major_label_text_alpha = 0
+        plot.xaxis.major_label_orientation = pi / 2
 
-    for g in plot.renderers:
-        if "GlyphRenderer" in str(g.__repr__):
-            g.glyph.line_alpha = 0
+        for g in plot.renderers:
+            if "GlyphRenderer" in str(g.__repr__):
+                g.glyph.line_alpha = 0
 
-    all_plots.append(plot)
+        all_plots.append(plot)
 
 output_file(html_output, title="rvt_pulse", mode="inline")
 save(column(all_plots))
