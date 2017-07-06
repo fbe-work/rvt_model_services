@@ -91,6 +91,12 @@ python micro framework to process actions on revit models from cli/command line
     run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
     
     ![pulse_graph][pulse_01] 
+    
+  * audit: bokeh graph showing the rusult of models being opened with "audit".<br>
+    success: green, unclassified error:orange, corrupt model: red.<br>
+    run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
+    
+    ![pulse_graph][audit_pulse_01] 
 
 ## limitations (typical limitations a journal file run process typically has):
   * no white spaces in model path
@@ -112,3 +118,4 @@ note: If you are not on this list, but believe you should be, please contact me!
 [qc_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/qc_01.png "qc_elements"
 [warnings_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/warnings_01.png "warnings_graph"
 [pulse_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/pulse_01.png "pulse_graph"
+[audit_pulse_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/audit_pulse_01.png "audit_pulse_graph"
