@@ -365,6 +365,8 @@ if model_exists:
     log_journal_result = ",".join([f"{k}: {v}" for k, v in log_journal_result.items()])
     if log_journal_result:
         print(f" detected post process parsing: {log_journal_result}")
+        if "corrupt" in log_journal_result:
+            return_logging = logging.critical
 
     if command == "warnings":
         update_json_and_bokeh(project_code, html_path)
