@@ -59,7 +59,7 @@ print(html_output_path)
 
 csv_path = op.join(paths["logs_dir"], "job_logging.csv")
 
-color_dict = {0.0: "green", 1.0: "red"}
+log_lvl_color = {"INFO": "green", "WARNING": "orange", "CRITICAL": "red"}
 
 pd.set_option('display.width', 1800)
 df = pd.read_csv(csv_path, sep=";", index_col=False)
@@ -73,8 +73,8 @@ df_paired["args"] = df_paired.args.shift(1)
 df_paired["duration"] = (df_paired["time_stamp"] - df_paired["offset_timestamp"]) / np.timedelta64(1, "s")
 df_paired["minutes"] = df_paired["time_stamp"].dt.strftime("%Y-%m-%d_%H-%M")
 
-df_paired["color"] = df_paired["error_code"].copy()
-df_paired["color"].replace(color_dict, inplace=True)
+df_paired["color"] = df_paired["level"].copy()
+df_paired["color"].replace(log_lvl_color, inplace=True)
 
 # loop over all found projects
 all_projects = df["project"].unique()
