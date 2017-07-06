@@ -89,7 +89,9 @@ for project in sorted(all_projects):
                            (df_paired["args"].str.contains("qc"))
                            ].copy()
 
-    if not df_project.empty:
+    if df_project.empty:
+        print("no data yet for project: {0}".format(project))
+    else:
         print(df_project.head(9))
 
         # Bar.help.builders[0].glyph.line_alpha = 0.0 # no effect?
