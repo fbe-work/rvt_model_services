@@ -27,18 +27,16 @@ Options:
 from docopt import docopt
 import os.path as op
 import os
-import re
-import winreg
 import subprocess
 import importlib
 import psutil
 import time
 import logging
 import colorful
-import olefile
 import rps_xml
 import rvt_journal_writer
 import rvt_journal_parser
+import rvt_detector
 from collections import defaultdict
 from commands.qc.bokeh_qc_graphs import update_graphs
 from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
@@ -100,61 +98,6 @@ def exit_with_log(message):
     """
     logging.warning(f"{project_code};{current_proc_hash};1;;{message}")
     exit()
-
-
-def get_rvt_file_version(rvt_file):
-    """
-    Seraches for the BasiFileInfo stream in the rvt file ole structure.
-    :param rvt_file: model file path
-    :return:str: rvt_file_version
-    """
-    if olefile.isOleFile(rvt_file):
-        rvt_ole = olefile.OleFileIO(rvt_file)
-        file_info = rvt_ole.openstream("BasicFileInfo").read().decode("utf-16le", "ignore")
-        pattern = re.compile(r" \d{4} ")
-        rvt_file_version = re.search(pattern, file_info)[0].strip()
-        return rvt_file_version
-    else:
-        print(f"file does not appear to be an ole file: {rvt_file}")
-
-
-def installed_rvt_detection(search_version):
-    """
-    Finds install path of rvt versions in win registry
-    :param search_version: major version number
-    :return:str: install path
-    """
-    search_version = str(search_version)
-    reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
-    soft_uninstall = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-    install_keys = winreg.OpenKey(reg, soft_uninstall)
-
-    install_location = "InstallLocation"
-    rvt_reg_keys = {}
-    rvt_install_paths = {}
-
-    index = 0
-    while True:
-        try:
-            adsk_pattern = r"Autodesk Revit ?(\S* )?\d{4}$"
-            current_key = winreg.EnumKey(install_keys, index)
-            if re.match(adsk_pattern, current_key):
-                rvt_reg_keys[current_key] = index
-                # print([current_key, index])
-        except OSError:
-            break
-        index += 1
-
-    for rk in rvt_reg_keys.keys():
-        version_pattern = r"\d{4}"
-        rvt_install_version = re.search(version_pattern, rk)[0]
-        reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
-        rvt_reg = winreg.OpenKey(reg, soft_uninstall + "\\" + rk)
-        # print([rk, rvt_reg, install_location])
-        exe_location = winreg.QueryValueEx(rvt_reg, install_location)[0] + "Revit.exe"
-        rvt_install_paths[rvt_install_version] = exe_location
-
-    return rvt_install_paths[search_version]
 
 
 def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_code):
@@ -317,9 +260,9 @@ if model_exists:
     print(f" number of child processes: {len(run_proc.children())}")
     print(f" first child process: {child_pid} - {proc_name_colored}")
 
-    rvt_model_version = get_rvt_file_version(rvt_model_path)
+    rvt_model_version = rvt_detector.get_rvt_file_version(rvt_model_path)
     print(colorful.bold_orange(f"-detected revit: {rvt_model_version}"))
-    rvt_install_path = installed_rvt_detection(rvt_model_version)
+    rvt_install_path = rvt_detector.installed_rvt_detection(rvt_model_version)
     print(f" version:{rvt_model_version} at path: {rvt_install_path}")
 
     print(colorful.bold_orange("-process countdown:"))
