@@ -42,6 +42,7 @@ import rvt_journal_parser
 from collections import defaultdict
 from commands.qc.bokeh_qc_graphs import update_graphs
 from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
+from notify.email import send_mail
 
 # TODO write model not found to log -> to main log from logging
 # TODO write log header if log not exists with logging module?
@@ -367,6 +368,7 @@ if model_exists:
         print(f" detected post process parsing: {log_journal_result}")
         if "corrupt" in log_journal_result:
             return_logging = logging.critical
+            send_mail.notify(project_code, rvt_model_path)
 
     if command == "warnings":
         update_json_and_bokeh(project_code, html_path)
