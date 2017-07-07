@@ -57,7 +57,7 @@ journals/*
 # rvt_model_services mail notifier
 notify/email/*
 !notify/email/README.md
-!notify/email/send_mail.py
+!notify/email/*.py
 
 # Installer logs
 pip-log.txt
