@@ -54,6 +54,11 @@ commands/audit/*.html
 journals/*
 !journals/README.md
 
+# rvt_model_services mail notifier
+notify/email/*
+!notify/email/README.md
+!notify/email/send_mail.py
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
