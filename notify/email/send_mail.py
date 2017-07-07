@@ -1,3 +1,4 @@
+import os.path as op
 import configparser
 import smtplib
 from email.mime.text import MIMEText
@@ -5,12 +6,14 @@ from email.mime.text import MIMEText
 
 def fetch_config(prj_number):
     config = configparser.ConfigParser()
-    config.read("config.ini")
-    if prj_number in config:
-        server = config[prj_number]["server"]
-        sender = config[prj_number]["sender"]
-        receiver = config[prj_number]["receiver"]
-        return server, sender, receiver
+    ini_file = op.join(op.dirname(op.abspath(__file__)), "config.ini")
+    if op.exists(ini_file):
+        config.read(ini_file)
+        if prj_number in config:
+            server = config[prj_number]["server"]
+            sender = config[prj_number]["sender"]
+            receiver = config[prj_number]["receiver"]
+            return server, sender, receiver
     else:
         return None, None, None
 
