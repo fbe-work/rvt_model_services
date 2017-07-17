@@ -81,7 +81,7 @@ def graph(_csv, _project_code, graph_topics):
                                        )
 
                 topic_figure.line("x", "y",
-                                  color=colors[i], name="name", source=cds,
+                                  color=colors[i], name="name", source=cds, legend=col_name[2:],
                                   **line_opt
                                   )
 
