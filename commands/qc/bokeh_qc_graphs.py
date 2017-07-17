@@ -15,7 +15,6 @@ Options:
 
 from docopt import docopt
 import os.path as op
-import os
 import colorful
 import pandas as pd
 from bokeh.palettes import viridis
@@ -177,11 +176,6 @@ if __name__ == "__main__":
     project_code = args["<project_code>"]
     html_path = args["--html_path"]
     qc_path = op.dirname(op.abspath(__file__))
-    """
-
-    html_path = op.dirname(op.abspath(__file__))
-    project_code = "123_N"
-    """
 
     print(f"command args: {args}")
     if not html_path:
