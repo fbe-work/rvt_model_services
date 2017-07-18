@@ -5,7 +5,7 @@ import olefile
 
 def get_rvt_file_version(rvt_file):
     """
-    Seraches for the BasiFileInfo stream in the rvt file ole structure.
+    Searches for the BasicFileInfo stream in the rvt file ole structure.
     :param rvt_file: model file path
     :return:str: rvt_file_version
     """
@@ -19,13 +19,11 @@ def get_rvt_file_version(rvt_file):
         print(f"file does not appear to be an ole file: {rvt_file}")
 
 
-def installed_rvt_detection(search_version):
+def installed_rvt_detection():
     """
     Finds install path of rvt versions in win registry
-    :param search_version: major version number
-    :return:str: install path
+    :return:dict: found install paths
     """
-    search_version = str(search_version)
     reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
     soft_uninstall = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
     install_keys = winreg.OpenKey(reg, soft_uninstall)
@@ -55,4 +53,4 @@ def installed_rvt_detection(search_version):
         exe_location = winreg.QueryValueEx(rvt_reg, install_location)[0] + "Revit.exe"
         rvt_install_paths[rvt_install_version] = exe_location
 
-    return rvt_install_paths[search_version]
+    return rvt_install_paths
