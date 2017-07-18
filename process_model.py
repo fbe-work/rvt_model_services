@@ -311,7 +311,7 @@ if model_exists:
         print(f" detected post process parsing: {log_journal_result}")
         if "corrupt" in log_journal_result:
             return_logging = logging.critical
-            send_mail.notify(project_code, rvt_model_path)
+            send_mail.notify(project_code, rvt_model_path, log_journal_result)
 
     if command == "warnings":
         update_json_and_bokeh(project_code, html_path)
