@@ -262,8 +262,7 @@ if model_exists:
 
     rvt_model_version = rvt_detector.get_rvt_file_version(rvt_model_path)
     print(colorful.bold_orange(f"-detected revit: {rvt_model_version}"))
-    rvt_install_paths = rvt_detector.installed_rvt_detection()
-    rvt_install_path = rvt_install_paths[rvt_model_version]
+    rvt_install_paths = rvt_detector.installed_rvt_detection()[rvt_model_version]
     print(f" version:{rvt_model_version} at path: {rvt_install_path}")
 
     print(colorful.bold_orange("-process countdown:"))
