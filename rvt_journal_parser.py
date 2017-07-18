@@ -8,10 +8,10 @@ import os.path as op
 
 model_corrupt = 'orrupt'
 missing_links = 'TaskDialog "Revit could not find or read'
-circular_link_conflict = 'TaskDialog_Circular_Link_Conflict'
+circular_links = 'TaskDialog_Circular_Link_Conflict'
 key_phrases = {missing_links: "missing_links",
                model_corrupt: "corrupt",
-               circular_link_conflict: "circular links",
+               circular_links: "circular links",
                }
 
 
@@ -31,5 +31,5 @@ def read_journal(journal_path):
                     print(f"!!_found:{key_phrases[key_phrase]}_!!")
                     print(journal_path)
                     print(decoded_line)
-                    detected[journal_name] = key_phrases[key_phrase]
-    return detected
+                    detected[key_phrases[key_phrase]] = journal_name + decoded_line
+                    return detected
