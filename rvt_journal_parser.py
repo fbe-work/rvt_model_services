@@ -33,3 +33,6 @@ def read_journal(journal_path):
                     print(decoded_line)
                     detected[key_phrases[key_phrase]] = journal_name + decoded_line
                     return detected
+    if not detected:
+        detected["nothing detected in"] = journal_name
+        return detected
