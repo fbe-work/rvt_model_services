@@ -1,27 +1,18 @@
 """ process_model.py
 Usage:
-    process_model.py    [options] 
-                        <command> <project_code> 
-                        <revit_model_path> <revit_model_file_name> 
-                        <revit_version_path> <revit_version> <timeout>
+    process_model.py    <command> <project_code> <full_model_path> [options]
 
 Arguments:
     command             action to be run on model, like: qc or dwf
                         currently available: qc, dwf
     project_code        unique project code consisting of 'projectnumber_projectModelPart' 
                         like 456_11 , 416_T99 or 377_S
-    model_path          revit model path without file name
-    model_file_name     revit model file name
-    rvt_version_path    revit .exe path of appropriate version like: 
-                        "C:/Program Files/Autodesk/Revit Architecture 2015/Revit.exe"
-                        soon deprecated: replaced by autodetection
-    rvt_version         the revit main version number like: 2015
-                        soon deprecated: replaced by autodetection
-    timeout             timeout in seconds before revit process gets terminated
+    full_model_path     revit model path including file name
 
 Options:
     -h, --help          Show this help screen.
     --html_path=<html>  path to store html bokeh graphs, default in /commands/qc/*.html
+    --timeout=<seconds> timeout in seconds before revit process gets terminated
 """
 
 from docopt import docopt
@@ -165,12 +156,14 @@ args = docopt(__doc__)
 
 command = args["<command>"]
 project_code = args["<project_code>"]
-model_path = args["<revit_model_path>"]
-model_file_name = args["<revit_model_file_name>"]
-rvt_version_path = args["<revit_version_path>"]
-rvt_version = args["<revit_version>"]
-timeout = int(args["<timeout>"])
+full_model_path = args["<full_model_path>"]
+model_path = op.abspath(full_model_path)
+model_path = model_path + op.sep
+model_file_name = op.basename(full_model_path)
+timeout = args["--timeout"]
 html_path = args["--html_path"]
+
+print([full_model_path, model_path, model_file_name])
 
 print(colorful.bold_blue(f"+process model job control started with command: {command}"))
 print(colorful.bold_orange('-detected following path structure:'))
@@ -178,9 +171,13 @@ paths = get_paths_dict()
 
 comma_concat_args = ",".join([f"{k}={v}" for k, v in args.items()])
 
-rvt_model_path = model_path + model_file_name
 journal_file_path = op.join(paths["journals_dir"], project_code + ".txt")
-model_exists = op.exists(rvt_model_path)
+model_exists = op.exists(full_model_path)
+
+if timeout:
+    timeout = int(timeout)
+else:
+    timeout = 60
 
 if not html_path:
     if command == "qc":
@@ -215,10 +212,13 @@ print(f" current process hash: {colorful.cyan(current_proc_hash)}")
 logging.info(f"{project_code};{current_proc_hash};;{comma_concat_args};{'task_started'}")
 
 os.environ["RVT_QC_PRJ"] = project_code
-os.environ["RVT_QC_PATH"] = rvt_model_path
+os.environ["RVT_QC_PATH"] = full_model_path
 os.environ["RVT_LOG_PATH"] = paths["logs_dir"]
 
-cmd_dict = command_detection(command, paths["commands_dir"], rvt_version, paths["root_dir"], project_code)
+rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
+rvt_install_path = rvt_detector.installed_rvt_detection()[rvt_model_version]
+
+cmd_dict = command_detection(command, paths["commands_dir"], rvt_model_version, paths["root_dir"], project_code)
 # print(cmd_dict)
 
 if model_exists:
@@ -238,10 +238,10 @@ if model_exists:
     addin_file_path = op.join(paths["journals_dir"], "RevitPythonShell.addin")
     rps_addin = rvt_journal_writer.write_addin(addin_file_path,
                                                rvt_journal_writer.rps_addin_template,
-                                               rvt_version,
+                                               rvt_model_version,
                                                )
 
-    run_proc = rvt_journal_run(rvt_version_path, journal_file_path, paths["root_dir"])
+    run_proc = rvt_journal_run(rvt_install_path, journal_file_path, paths["root_dir"])
     run_proc_id = run_proc.pid
     run_proc_name = run_proc.name()
 
@@ -260,9 +260,7 @@ if model_exists:
     print(f" number of child processes: {len(run_proc.children())}")
     print(f" first child process: {child_pid} - {proc_name_colored}")
 
-    rvt_model_version = rvt_detector.get_rvt_file_version(rvt_model_path)
     print(colorful.bold_orange(f"-detected revit: {rvt_model_version}"))
-    rvt_install_paths = rvt_detector.installed_rvt_detection()[rvt_model_version]
     print(f" version:{rvt_model_version} at path: {rvt_install_path}")
 
     print(colorful.bold_orange("-process countdown:"))
@@ -311,21 +309,17 @@ if model_exists:
         print(f" detected post process parsing: {log_journal_result}")
         if "corrupt" in log_journal_result:
             return_logging = logging.critical
-            send_mail.notify(project_code, rvt_model_path, log_journal_result)
+            send_mail.notify(project_code, full_model_path, log_journal_result)
 
     if command == "warnings":
         update_json_and_bokeh(project_code, html_path)
 
     # write log according to return code
-    return_logging(f"{project_code};{current_proc_hash};{return_code};;{log_journal_result}")
+    logged_journal_excerpt = log_journal_result.strip('\n')
+    return_logging(f"{project_code};{current_proc_hash};{return_code};;{logged_journal_excerpt}")
 
 else:
     print("model not found")
     logging.warning(f"{project_code};{current_proc_hash};1;;{'model not found'}")
 
 print(colorful.bold_blue("+process model job control script ended"))
-
-# deprecation info
-if args["<revit_version_path>"] or args["<revit_version>"]:
-    print(colorful.bold_red("\n!!warning!!: <revit_version_path> and <revit_version> will be \n"
-                            "replaced by autodetect functions and deprecated in 0.3!"))
