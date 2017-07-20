@@ -5,17 +5,16 @@ rvt_journal_writer
 import rps_xml
 
 
-def write_journal(journal_file_path, journal_template, rvt_model_path, rvt_model_file, command):
+def write_journal(journal_file_path, journal_template, full_model_path, command):
     """
     Writes a journal to be used with revit, based on
     :param journal_file_path: journal output path.
     :param journal_template: journal template to be used as base.
-    :param rvt_model_path: file path to the model.
-    :param rvt_model_file: rvt model name.
+    :param full_model_path: file path to the model.
     :param command: action to be performed on the model.
     :return: journal_file_path
     """
-    rvt_model_file_path = '"' + rvt_model_path + rvt_model_file + '"'
+    rvt_model_file_path = '"' + full_model_path + '"'
     journal_template = journal_template.format(rvt_model_file_path, command)
     with open(journal_file_path, "w") as jrn_file:
         jrn_file.write(journal_template)
