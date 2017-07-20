@@ -157,8 +157,7 @@ args = docopt(__doc__)
 command = args["<command>"]
 project_code = args["<project_code>"]
 full_model_path = args["<full_model_path>"]
-model_path = op.abspath(full_model_path)
-model_path = model_path + op.sep
+model_path = op.dirname(full_model_path)
 model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
@@ -230,8 +229,7 @@ if model_exists:
 
     journal = rvt_journal_writer.write_journal(journal_file_path,
                                                journal_template,
-                                               model_path,
-                                               model_file_name,
+                                               full_model_path,
                                                cmd_dict[command],
                                                )
 
