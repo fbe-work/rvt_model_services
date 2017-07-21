@@ -162,8 +162,6 @@ model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
 
-print([full_model_path, model_path, model_file_name])
-
 print(colorful.bold_blue(f"+process model job control started with command: {command}"))
 print(colorful.bold_orange('-detected following path structure:'))
 paths = get_paths_dict()
