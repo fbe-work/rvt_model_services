@@ -311,7 +311,7 @@ if model_exists:
         update_json_and_bokeh(project_code, html_path)
 
     # write log according to return code
-    logged_journal_excerpt = log_journal_result.strip('\n')
+    logged_journal_excerpt = log_journal_result.strip('\n').strip('\r')
     return_logging(f"{project_code};{current_proc_hash};{return_code};;{logged_journal_excerpt}")
 
 else:
