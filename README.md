@@ -2,10 +2,10 @@
 python micro framework to process actions on revit models from cli/command line
 
 ## how it works:
-  * you initialize it with a command to process_model.py specifying the task, project path and revit version and a timeout.
+  * you initialize it with a command to process_model.py specifying the task, revit model and an optional timeout.
   * process_model.py will spin off a subprocess to write a journal file and addin according to your specified task and project.
-  * it will then run Revit according to journal file, opening a detached version of your model and run the specified action like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
-  * if the journal file cannot be run to completion the subprocess is killed and an error is logged.
+  * it will then run Revit according to this journal file, opening a detached version of your model and run the specified action like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
+  * if the journal file cannot be run to completion the subprocess is killed and an error is logged. the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
 
 ## it requires/is currently run on:
   * cpython >= 3.6 (with additional modules: beautifulsoup4, bokeh, colorama, colorful, docopt, numpy, pandas, psutil, olefile)
@@ -87,15 +87,19 @@ python micro framework to process actions on revit models from cli/command line
     ![pulse_graph][pulse_01] 
     
   * audit: bokeh graph showing the rusult of models being opened with "audit".<br>
+    if configured an email will be sent if the model is corrupt. see readme for email config guide in notify/email/<br>
     success: green, unclassified error:orange, corrupt model: red.<br>
     run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
     
     ![pulse_graph][audit_pulse_01] 
 
-## limitations (typical limitations a journal file run process typically has):
-  * no white spaces in model path
-  * no non-ascii characters in model path
-  * task will not run to completion if confronted with any unexpected messages
+## limitations:
+  - of journal files:
+    * no white spaces in model path
+    * no non-ascii characters in model path
+    * task will not run to completion if confronted with any unexpected messages<br>
+  - of this framework:
+    * do not schedule overlapping readouts, the simple pandas code is not (yet) prepared to handle this in the graphs
 
 ## credits
  * Frederic Beaupere (original version, maintainer)
