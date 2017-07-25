@@ -2,10 +2,10 @@
 python micro framework to process actions on revit models from cli/command line
 
 ## how it works:
-  * you initialize it with a command to process_model.py specifying the task, project path and revit version and a timeout.
+  * you initialize it with a command to process_model.py specifying the task, revit model and an optional timeout.
   * process_model.py will spin off a subprocess to write a journal file and addin according to your specified task and project.
-  * it will then run Revit according to journal file, opening a detached version of your model and run the specified action like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
-  * if the journal file cannot be run to completion the subprocess is killed and an error is logged.
+  * it will then run Revit according to this journal file, opening a detached version of your model and run the specified action like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
+  * if the journal file cannot be run to completion the subprocess is killed and an error is logged. the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
 
 ## it requires/is currently run on:
   * cpython >= 3.6 (with additional modules: beautifulsoup4, bokeh, colorama, colorful, docopt, numpy, pandas, psutil, olefile)
@@ -33,11 +33,8 @@ python micro framework to process actions on revit models from cli/command line
     your path to process_model.py<br>
     command type<br>
     project name<br>
-    path to the project Revit model<br>
-    revit model file name<br>
-    path to Revit executable to run it with<br>
-    Revit version number to open the file with<br>
-    a timeout for the process
+    full path to the project Revit model<br>
+    a timeout for the process (optional - default is 60 seconds)<br>
 
     so it could look like this:
 
@@ -45,18 +42,15 @@ python micro framework to process actions on revit models from cli/command line
     D:/testrun/934_rvt_model_services/process_model.py<br>
     qc<br>
     123_N<br>
-    D:/testmodel/<br>
-    123_N.rvt<br>
-    "C:/Program Files/Autodesk/Revit Architecture 2016/Revit.exe"<br>
-    2016<br>
-    600<br>
+    D:/testmodel/123_N.rvt<br>
+    --timeout 600<br>
     
     Just concatenate it (put it into one line).<br>
     Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.<br>
     If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.
     Here is how this looks on my screen:
     
-    ![cmder_screenshot][cmder_01]   
+    ![cmder_screenshot][cmder_02]   
 
   * step 3: let task scheduler repeat your task<br>
     for recurring tasks hook it up to Windows® task scheduler:
@@ -68,7 +62,7 @@ python micro framework to process actions on revit models from cli/command line
             Program/Script:<br>
                 "C:\Program Files\Python36\python.exe"<br>
             Add Arguments:<br>
-                D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/ 123_N.rvt "C:/Program Files/Autodesk/Revit Architecture 2016/Revit.exe" 2016 600 <br>
+                D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600 <br>
         - Finish and test if it works: "Right-Click > Run"
 
 ## typical use cases(recurring tasks run via schedule Task Scheduler):
@@ -93,15 +87,19 @@ python micro framework to process actions on revit models from cli/command line
     ![pulse_graph][pulse_01] 
     
   * audit: bokeh graph showing the rusult of models being opened with "audit".<br>
+    if configured an email will be sent if the model is corrupt. see readme for email config guide in notify/email/<br>
     success: green, unclassified error:orange, corrupt model: red.<br>
     run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
     
     ![pulse_graph][audit_pulse_01] 
 
-## limitations (typical limitations a journal file run process typically has):
-  * no white spaces in model path
-  * no non-ascii characters in model path
-  * task will not run to completion if confronted with any unexpected messages
+## limitations:
+  - of journal files:
+    * no white spaces in model path
+    * no non-ascii characters in model path
+    * task will not run to completion if confronted with any unexpected messages<br>
+  - of this framework:
+    * do not schedule overlapping readouts, the simple pandas code is not (yet) prepared to handle this in the graphs
 
 ## credits
  * Frederic Beaupere (original version, maintainer)
@@ -114,7 +112,7 @@ note: If you are not on this list, but believe you should be, please contact me!
 ## license
 [MIT](https://opensource.org/licenses/MIT)
 
-[cmder_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/cmder_01.png "cmder_screenshot"
+[cmder_02]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/cmder_02.png "cmder_screenshot"
 [qc_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/qc_01.png "qc_elements"
 [warnings_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/warnings_01.png "warnings_graph"
 [pulse_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/pulse_01.png "pulse_graph"
