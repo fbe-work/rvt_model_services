@@ -33,11 +33,8 @@ python micro framework to process actions on revit models from cli/command line
     your path to process_model.py<br>
     command type<br>
     project name<br>
-    path to the project Revit model<br>
-    revit model file name<br>
-    path to Revit executable to run it with<br>
-    Revit version number to open the file with<br>
-    a timeout for the process
+    full path to the project Revit model<br>
+    a timeout for the process (optional - default is 60 seconds)<br>
 
     so it could look like this:
 
@@ -45,11 +42,8 @@ python micro framework to process actions on revit models from cli/command line
     D:/testrun/934_rvt_model_services/process_model.py<br>
     qc<br>
     123_N<br>
-    D:/testmodel/<br>
-    123_N.rvt<br>
-    "C:/Program Files/Autodesk/Revit Architecture 2016/Revit.exe"<br>
-    2016<br>
-    600<br>
+    D:/testmodel/123_N.rvt<br>
+    --timeout 600<br>
     
     Just concatenate it (put it into one line).<br>
     Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.<br>
@@ -68,7 +62,7 @@ python micro framework to process actions on revit models from cli/command line
             Program/Script:<br>
                 "C:\Program Files\Python36\python.exe"<br>
             Add Arguments:<br>
-                D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/ 123_N.rvt "C:/Program Files/Autodesk/Revit Architecture 2016/Revit.exe" 2016 600 <br>
+                D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600 <br>
         - Finish and test if it works: "Right-Click > Run"
 
 ## typical use cases(recurring tasks run via schedule Task Scheduler):
