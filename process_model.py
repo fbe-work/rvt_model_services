@@ -12,6 +12,7 @@ Arguments:
 Options:
     -h, --help          Show this help screen.
     --html_path=<html>  path to store html bokeh graphs, default in /commands/qc/*.html
+    --rvt_path=<rvt>    full path to force specific rvt version other than detected
     --timeout=<seconds> timeout in seconds before revit process gets terminated
 """
 
@@ -161,6 +162,7 @@ model_path = op.dirname(full_model_path)
 model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
+rvt_override_path = args["--rvt_path"]
 
 print(colorful.bold_blue(f"+process model job control started with command: {command}"))
 print(colorful.bold_orange('-detected following path structure:'))
@@ -213,7 +215,10 @@ os.environ["RVT_QC_PATH"] = full_model_path
 os.environ["RVT_LOG_PATH"] = paths["logs_dir"]
 
 rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
-rvt_install_path = rvt_detector.installed_rvt_detection()[rvt_model_version]
+if not rvt_override_path:
+    rvt_install_path = rvt_detector.installed_rvt_detection()[rvt_model_version]
+else:
+    rvt_install_path = rvt_override_path
 
 cmd_dict = command_detection(command, paths["commands_dir"], rvt_model_version, paths["root_dir"], project_code)
 # print(cmd_dict)
