@@ -50,7 +50,7 @@ python micro framework to process actions on revit models from cli/command line
     If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.
     Here is how this looks on my screen:
     
-    ![cmder_screenshot][cmder_01]   
+    ![cmder_screenshot][cmder_02]   
 
   * step 3: let task scheduler repeat your task<br>
     for recurring tasks hook it up to Windows® task scheduler:
@@ -112,7 +112,7 @@ note: If you are not on this list, but believe you should be, please contact me!
 ## license
 [MIT](https://opensource.org/licenses/MIT)
 
-[cmder_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/cmder_01.png "cmder_screenshot"
+[cmder_02]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/cmder_02.png "cmder_screenshot"
 [qc_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/qc_01.png "qc_elements"
 [warnings_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/warnings_01.png "warnings_graph"
 [pulse_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/pulse_01.png "pulse_graph"
