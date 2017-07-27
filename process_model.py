@@ -134,18 +134,14 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                         rvt_journal_writer.rps_addin_template = mod.register["override_addin_template"]
                         com_dict[command_name] = "' "
                         # print("journal addin overridden")
-                    if "rvt_journal_writer" in mod.register:
-                        # print("needs rvt_journal_writer")
-                        if mod.register["rvt_journal_writer"] == "warnings_export_command":
-                            warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
-                            warn_cmd = rvt_journal_writer.warnings_export_command(rvt_journal_writer.
-                                                                                  export_warnings_template,
-                                                                                  warnings_command_dir,
-                                                                                  project_code,
-                                                                                  ),
-                            com_dict[command_name] = warn_cmd[0]
-                        elif mod.register["rvt_journal_writer"] == "audit":
-                            com_dict[command_name] = "' "
+                    if "override_jrn_command" in mod.register:
+                        warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
+                        override_command = mod.register["override_jrn_command"].format(warnings_command_dir,
+                                                                                       project_code)
+                        print(override_command)
+                        com_dict[command_name] = override_command[0]
+                        # print("journal command overridden")
+
     if not found_dir:
         print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
         exit_with_log('command directory not found')
