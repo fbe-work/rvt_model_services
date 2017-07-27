@@ -34,10 +34,8 @@ from commands.qc.bokeh_qc_graphs import update_graphs
 from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
 from notify.email import send_mail
 
-# TODO write model not found to log -> to main log from logging
-# TODO write log header if log not exists with logging module?
 # TODO make rvt_pulse available from process model?
-# TODO audit parse journal files post-process to discover potential model corruption
+# TODO generalize post processing so it can be populated from command
 
 
 def get_paths_dict():
@@ -138,7 +136,7 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                         warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
                         override_command = mod.register["override_jrn_command"].format(warnings_command_dir,
                                                                                        project_code)
-                        print(override_command)
+                        # print(override_command)
                         com_dict[command_name] = override_command[0]
                         # print("journal command overridden")
 
