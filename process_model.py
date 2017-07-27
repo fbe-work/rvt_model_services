@@ -216,7 +216,11 @@ os.environ["RVT_LOG_PATH"] = paths["logs_dir"]
 
 rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
 if not rvt_override_path:
-    rvt_install_path = rvt_detector.installed_rvt_detection()[rvt_model_version]
+    rvt_install_path = rvt_detector.installed_rvt_detection().get(rvt_model_version)
+    if not rvt_install_path:
+        print(f"no installed rvt versions for {rvt_model_version} detected - please use '--rvt_path' to specify path.")
+        logging.warning(f"{project_code};{current_proc_hash};1;;{'no rvt versions for {rvt_model_version} detected'}")
+        exit()
 else:
     rvt_install_path = rvt_override_path
 
