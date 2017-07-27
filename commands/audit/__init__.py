@@ -17,6 +17,5 @@ Set Jrn = CrsJournalScript
  """
 
 register = {"name": "audit",
-            "rvt_journal_writer": "audit",
             "override_jrn_template": override_jrn_template,
             }
