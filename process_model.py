@@ -129,11 +129,11 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                     if "override_jrn_template" in mod.register:
                         rvt_journal_writer.detach_rps_template = mod.register["override_jrn_template"]
                         com_dict[command_name] = "' "
-                        print("journal template overridden")
+                        # print("journal template overridden")
                     if "override_addin_template" in mod.register:
                         rvt_journal_writer.rps_addin_template = mod.register["override_addin_template"]
                         com_dict[command_name] = "' "
-                        print("journal template overridden")
+                        # print("journal addin overridden")
                     if "rvt_journal_writer" in mod.register:
                         # print("needs rvt_journal_writer")
                         if mod.register["rvt_journal_writer"] == "warnings_export_command":
