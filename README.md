@@ -93,6 +93,11 @@ python micro framework to process actions on revit models from cli/command line
     
     ![pulse_graph][audit_pulse_01] 
 
+## how to extend:
+  * rvt_model_services was created with extendibility in mind. if you wish to extend the functionality, just create a folder with the name of your custom command. place a __init__.py in it as you can find it in the other built-in commands. in this init file you would define your command name request rps script buttons and be able to overwrite addin and journal template.
+  * in the spirit of cookiecutter I will soon provide a custom command directory which can be used as a template for your custom action.
+  * if you want to share something, that might be useful to many others feel free to PR.
+
 ## limitations:
   - of journal files:
     * no white spaces in model path
