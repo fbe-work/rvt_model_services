@@ -126,6 +126,14 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                         button_name = mod.register["get_rps_button"]
                         rps_button = rps_xml.get_rps_button(rps_xml.find_xml_command(rvt_ver, ""), button_name)
                         com_dict[command_name] = rps_button
+                    if "override_jrn_template" in mod.register:
+                        rvt_journal_writer.detach_rps_template = mod.register["override_jrn_template"]
+                        com_dict[command_name] = "' "
+                        print("journal template overridden")
+                    if "override_addin_template" in mod.register:
+                        rvt_journal_writer.rps_addin_template = mod.register["override_addin_template"]
+                        com_dict[command_name] = "' "
+                        print("journal template overridden")
                     if "rvt_journal_writer" in mod.register:
                         # print("needs rvt_journal_writer")
                         if mod.register["rvt_journal_writer"] == "warnings_export_command":
@@ -228,14 +236,8 @@ cmd_dict = command_detection(command, paths["commands_dir"], rvt_model_version, 
 # print(cmd_dict)
 
 if model_exists:
-
-    if command == "audit":
-        journal_template = rvt_journal_writer.audit_detach_template
-    else:
-        journal_template = rvt_journal_writer.detach_rps_template
-
     journal = rvt_journal_writer.write_journal(journal_file_path,
-                                               journal_template,
+                                               rvt_journal_writer.detach_rps_template,
                                                full_model_path,
                                                cmd_dict[command],
                                                )
