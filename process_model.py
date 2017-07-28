@@ -33,6 +33,7 @@ from collections import defaultdict
 from commands.qc.bokeh_qc_graphs import update_graphs
 from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
 from notify.email import send_mail
+from notify.slack import send_slack
 
 # TODO make rvt_pulse available from process model?
 # TODO generalize post processing so it can be populated from command
