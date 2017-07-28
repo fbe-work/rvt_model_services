@@ -12,6 +12,7 @@ Arguments:
 Options:
     -h, --help          Show this help screen.
     --html_path=<html>  path to store html bokeh graphs, default in /commands/qc/*.html
+    --rvt_path=<rvt>    full path to force specific rvt version other than detected
     --timeout=<seconds> timeout in seconds before revit process gets terminated
 """
 
@@ -33,10 +34,8 @@ from commands.qc.bokeh_qc_graphs import update_graphs
 from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
 from notify.email import send_mail
 
-# TODO write model not found to log -> to main log from logging
-# TODO write log header if log not exists with logging module?
 # TODO make rvt_pulse available from process model?
-# TODO audit parse journal files post-process to discover potential model corruption
+# TODO generalize post processing so it can be populated from command
 
 
 def get_paths_dict():
@@ -125,22 +124,29 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                         button_name = mod.register["get_rps_button"]
                         rps_button = rps_xml.get_rps_button(rps_xml.find_xml_command(rvt_ver, ""), button_name)
                         com_dict[command_name] = rps_button
-                    if "rvt_journal_writer" in mod.register:
-                        # print("needs rvt_journal_writer")
-                        if mod.register["rvt_journal_writer"] == "warnings_export_command":
-                            warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
-                            warn_cmd = rvt_journal_writer.warnings_export_command(rvt_journal_writer.
-                                                                                  export_warnings_template,
-                                                                                  warnings_command_dir,
-                                                                                  project_code,
-                                                                                  ),
-                            com_dict[command_name] = warn_cmd[0]
-                        elif mod.register["rvt_journal_writer"] == "audit":
-                            com_dict[command_name] = "' "
+                    if "override_jrn_template" in mod.register:
+                        rvt_journal_writer.detach_rps_template = mod.register["override_jrn_template"]
+                        # print("journal template overridden")
+                    if "override_addin_template" in mod.register:
+                        rvt_journal_writer.rps_addin_template = mod.register["override_addin_template"]
+                        # print("journal addin overridden")
+                    if "override_jrn_command" in mod.register:
+                        warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
+                        override_command = mod.register["override_jrn_command"].format(warnings_command_dir,
+                                                                                       project_code)
+                        # print(override_command)
+                        com_dict[command_name] = override_command
+                        # print("journal command overridden")
+
+            if not com_dict:
+                com_dict[command_name] = "' "
+                # print("com_dict reset")
+
     if not found_dir:
         print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
         exit_with_log('command directory not found')
 
+    # print(com_dict)
     return com_dict
 
 
@@ -161,6 +167,7 @@ model_path = op.dirname(full_model_path)
 model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
+rvt_override_path = args["--rvt_path"]
 
 print(colorful.bold_blue(f"+process model job control started with command: {command}"))
 print(colorful.bold_orange('-detected following path structure:'))
@@ -213,20 +220,21 @@ os.environ["RVT_QC_PATH"] = full_model_path
 os.environ["RVT_LOG_PATH"] = paths["logs_dir"]
 
 rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
-rvt_install_path = rvt_detector.installed_rvt_detection()[rvt_model_version]
+if not rvt_override_path:
+    rvt_install_path = rvt_detector.installed_rvt_detection().get(rvt_model_version)
+    if not rvt_install_path:
+        print(f"no installed rvt versions for {rvt_model_version} detected - please use '--rvt_path' to specify path.")
+        logging.warning(f"{project_code};{current_proc_hash};1;;{'no rvt versions for {rvt_model_version} detected'}")
+        exit()
+else:
+    rvt_install_path = rvt_override_path
 
 cmd_dict = command_detection(command, paths["commands_dir"], rvt_model_version, paths["root_dir"], project_code)
 # print(cmd_dict)
 
 if model_exists:
-
-    if command == "audit":
-        journal_template = rvt_journal_writer.audit_detach_template
-    else:
-        journal_template = rvt_journal_writer.detach_rps_template
-
     journal = rvt_journal_writer.write_journal(journal_file_path,
-                                               journal_template,
+                                               rvt_journal_writer.detach_rps_template,
                                                full_model_path,
                                                cmd_dict[command],
                                                )

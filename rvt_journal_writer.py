@@ -35,10 +35,6 @@ def write_addin(addin_file_path, addin_template, rvt_version):
     return addin_file_path
 
 
-def warnings_export_command(export_template, path, file_name):
-    return export_template.format(path, file_name)
-
-
 detach_rps_template = """' 0:< 'C 27-Oct-2016 19:33:31.459;
 Dim Jrn
 Set Jrn = CrsJournalScript
