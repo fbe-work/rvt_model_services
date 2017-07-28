@@ -22,13 +22,14 @@ var/
 .installed.cfg
 *.egg
 
-# ignore all commands except rvt_model_services built-in commands
+# ignore all commands except rvt_model_services built-in commands and cookiecutter template
 commands/*
 !commands/qc/
 !commands/dwf/
 !commands/pulse/
 !commands/warnings/
 !commands/audit/
+!commands/cookiecutter/
 
 # rvt_model_services logs
 logs/*
