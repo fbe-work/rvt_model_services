@@ -126,24 +126,27 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                         com_dict[command_name] = rps_button
                     if "override_jrn_template" in mod.register:
                         rvt_journal_writer.detach_rps_template = mod.register["override_jrn_template"]
-                        com_dict[command_name] = "' "
                         # print("journal template overridden")
                     if "override_addin_template" in mod.register:
                         rvt_journal_writer.rps_addin_template = mod.register["override_addin_template"]
-                        com_dict[command_name] = "' "
                         # print("journal addin overridden")
                     if "override_jrn_command" in mod.register:
                         warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
                         override_command = mod.register["override_jrn_command"].format(warnings_command_dir,
                                                                                        project_code)
                         # print(override_command)
-                        com_dict[command_name] = override_command[0]
+                        com_dict[command_name] = override_command
                         # print("journal command overridden")
+
+            if not com_dict[command_name]:
+                com_dict[command_name] = "' "
+                print("com_dict reset")
 
     if not found_dir:
         print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
         exit_with_log('command directory not found')
 
+    # print(com_dict)
     return com_dict
 
 
