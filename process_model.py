@@ -102,6 +102,7 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
     :return:
     """
     com_dict = defaultdict()
+    post_proc_dict = defaultdict()
     found_dir = False
     for directory in os.scandir(commands_dir):
         command_name = directory.name
@@ -116,6 +117,7 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
             else:
                 print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
                 exit_with_log('__init__.py in command directory not found')
+
             if "register" in dir(mod):
                 if mod.register["name"] == command_name:
                     # print("command_name found!")
@@ -137,6 +139,12 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                         # print(override_command)
                         com_dict[command_name] = override_command
                         # print("journal command overridden")
+                    if "post_process" in mod.register:
+                        external_args = []
+                        for arg in mod.register["post_process"]["args"]:
+                            external_args.append(globals().get(arg))
+                        post_proc_dict["func"] = mod.register["post_process"]["func"]
+                        post_proc_dict["args"] = external_args
 
             if not com_dict:
                 com_dict[command_name] = "' "
@@ -147,7 +155,7 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
         exit_with_log('command directory not found')
 
     # print(com_dict)
-    return com_dict
+    return com_dict, post_proc_dict
 
 
 def get_child_journal(process):
@@ -229,7 +237,8 @@ if not rvt_override_path:
 else:
     rvt_install_path = rvt_override_path
 
-cmd_dict = command_detection(command, paths["commands_dir"], rvt_model_version, paths["root_dir"], project_code)
+cmd_dict, post_proc = command_detection(command, paths["commands_dir"],
+                                        rvt_model_version, paths["root_dir"], project_code)
 # print(cmd_dict)
 
 if model_exists:
@@ -284,9 +293,6 @@ if model_exists:
             print(colorful.bold_green(f" {poll} - revit finished!"))
             return_code = "0"
             return_logging = logging.info
-
-            if command == "qc":
-                update_graphs(project_code, html_path)
             break
 
         elif timeout-sec-1 == 0:
@@ -304,7 +310,7 @@ if model_exists:
                     return_code = "0"
                     return_logging = logging.info
 
-    # post loop processing updating graphs, parsing journal files
+    # post loop processing, parsing journal files
     print(colorful.bold_orange("-post process:"))
     print(f" process open journal for post process parsing:\n {log_journal}")
     log_journal_result = rvt_journal_parser.read_journal(log_journal)
@@ -315,8 +321,9 @@ if model_exists:
             return_logging = logging.critical
             send_mail.notify(project_code, full_model_path, log_journal_result)
 
-    if command == "warnings":
-        update_json_and_bokeh(project_code, html_path)
+    # getting post process funcs and args from command module for updating graphs and custom functionality
+    if post_proc:
+        post_proc["func"](*post_proc["args"])
 
     # write log according to return code
     logged_journal_excerpt = log_journal_result.strip('\n').strip('\r')
