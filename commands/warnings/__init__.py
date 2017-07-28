@@ -1,3 +1,5 @@
+from . import bokeh_warnings_graphs
+
 override_jrn_command = """ Jrn.RibbonEvent "TabActivated:Manage"
  Jrn.Command "Ribbon" , "Review previously posted warnings , ID_REVIEW_WARNINGS"
  Jrn.Data "Error dialog" , "0 failures, 0 errors, 0 warnings"
@@ -13,4 +15,6 @@ override_jrn_command = """ Jrn.RibbonEvent "TabActivated:Manage"
 register = {"name": "warnings",
             "override_jrn_command": override_jrn_command,
             "optional_html_path": True,
+            "post_process": {"func": bokeh_warnings_graphs.update_json_and_bokeh,
+                             "args": ["project_code", "html_path"]},
             }
