@@ -138,9 +138,9 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                         com_dict[command_name] = override_command
                         # print("journal command overridden")
 
-            if not com_dict[command_name]:
+            if not com_dict:
                 com_dict[command_name] = "' "
-                print("com_dict reset")
+                # print("com_dict reset")
 
     if not found_dir:
         print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
