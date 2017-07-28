@@ -1,4 +1,5 @@
 import winreg
+import sys
 import re
 import olefile
 
@@ -24,15 +25,20 @@ def installed_rvt_detection():
     Finds install path of rvt versions in win registry
     :return:dict: found install paths
     """
-    reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
-    soft_uninstall = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-    install_keys = winreg.OpenKey(reg, soft_uninstall)
-
     install_location = "InstallLocation"
     rvt_reg_keys = {}
     rvt_install_paths = {}
-
     index = 0
+    reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
+    soft_uninstall = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    python32bit = "32 bit" in sys.version
+    python64bit = "64 bit" in sys.version
+
+    if python64bit:
+        install_keys = winreg.OpenKey(reg, soft_uninstall)
+    elif python32bit:
+        install_keys = winreg.OpenKey(reg, soft_uninstall, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
+
     while True:
         try:
             adsk_pattern = r"Autodesk Revit ?(\S* )?\d{4}$"
@@ -48,7 +54,10 @@ def installed_rvt_detection():
         version_pattern = r"\d{4}"
         rvt_install_version = re.search(version_pattern, rk)[0]
         reg = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
-        rvt_reg = winreg.OpenKey(reg, soft_uninstall + "\\" + rk)
+        if python64bit:
+            rvt_reg = winreg.OpenKey(reg, soft_uninstall + "\\" + rk)
+        elif python32bit:
+            rvt_reg = winreg.OpenKey(reg, soft_uninstall + "\\" + rk, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY)
         # print([rk, rvt_reg, install_location])
         exe_location = winreg.QueryValueEx(rvt_reg, install_location)[0] + "Revit.exe"
         rvt_install_paths[rvt_install_version] = exe_location
