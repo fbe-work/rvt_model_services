@@ -60,6 +60,11 @@ notify/email/*
 !notify/email/README.md
 !notify/email/*.py
 
+# rvt_model_services mail notifier
+notify/slack/*
+!notify/slack/README.md
+!notify/slack/*.py
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
