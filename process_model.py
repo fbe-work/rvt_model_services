@@ -13,6 +13,7 @@ Options:
     -h, --help          Show this help screen.
     --html_path=<html>  path to store html bokeh graphs, default in /commands/qc/*.html
     --rvt_path=<rvt>    full path to force specific rvt version other than detected
+    --notify            choose to be notified with configured notify module(s)
     --timeout=<seconds> timeout in seconds before revit process gets terminated
 """
 
@@ -30,12 +31,11 @@ import rvt_journal_writer
 import rvt_journal_parser
 import rvt_detector
 from collections import defaultdict
-from commands.qc.bokeh_qc_graphs import update_graphs
-from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
 from notify.email import send_mail
 from notify.slack import send_slack
 
 # TODO make rvt_pulse available from process model?
+# TODO generalize notify with optional cli arguments
 # TODO generalize post processing so it can be populated from command
 
 
@@ -112,9 +112,13 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
             found_dir = True
             # print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
             if op.exists(f"{commands_dir}/{command_name}/__init__.py"):
-                mod = importlib.machinery.SourceFileLoader(command_name, op.join(commands_dir,
+                # """
+                from importlib import machinery
+                mod = machinery.SourceFileLoader(command_name, op.join(commands_dir,
                                                                                  command_name,
                                                                                  "__init__.py")).load_module()
+                # """
+                # mod = importlib.import_module(".commands", command_name)
             else:
                 print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
                 exit_with_log('__init__.py in command directory not found')
@@ -177,6 +181,7 @@ model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
 rvt_override_path = args["--rvt_path"]
+notify = args["--notify"]
 
 print(colorful.bold_blue(f"+process model job control started with command: {command}"))
 print(colorful.bold_orange('-detected following path structure:'))
@@ -320,7 +325,11 @@ if model_exists:
         print(f" detected post process parsing: {log_journal_result}")
         if "corrupt" in log_journal_result:
             return_logging = logging.critical
-            send_mail.notify(project_code, full_model_path, log_journal_result)
+            # for now let's try all notify modules later we will specify
+            if notify:
+                notify_modules = [send_mail, send_slack]
+                for notify_function in notify_modules:
+                    notify_function.notify(project_code, full_model_path, log_journal_result)
 
     # getting post process funcs and args from command module for updating graphs and custom functionality
     if post_proc:
