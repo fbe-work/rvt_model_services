@@ -5,7 +5,7 @@ Usage:
 Arguments:
     command             action to be run on model, like: qc or dwf
                         currently available: qc, dwf
-    project_code        unique project code consisting of 'projectnumber_projectModelPart' 
+    project_code        unique project code consisting of 'projectnumber_projectModelPart'
                         like 456_11 , 416_T99 or 377_S
     full_model_path     revit model path including file name
 
@@ -31,6 +31,7 @@ import rvt_journal_writer
 import rvt_journal_parser
 import rvt_detector
 from collections import defaultdict
+from importlib import machinery
 from notify.email import send_mail
 from notify.slack import send_slack
 
@@ -112,13 +113,9 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
             found_dir = True
             # print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
             if op.exists(f"{commands_dir}/{command_name}/__init__.py"):
-                # """
-                from importlib import machinery
                 mod = machinery.SourceFileLoader(command_name, op.join(commands_dir,
                                                                                  command_name,
                                                                                  "__init__.py")).load_module()
-                # """
-                # mod = importlib.import_module(".commands", command_name)
             else:
                 print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
                 exit_with_log('__init__.py in command directory not found')
