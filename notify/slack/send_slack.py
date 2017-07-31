@@ -1,4 +1,4 @@
-'''
+"""
 Used to send messages to a specified Slack channel. 
 Set the token and channel in the config.ini file in the /slack folder
 
@@ -9,12 +9,12 @@ Usage:
 from notify.slack import send_slack
 
 send_slack.notify(project_code, "Your message here")
-
-'''
+"""
 
 from slackclient import SlackClient
 import os.path as op
 import configparser
+
 
 def fetch_config(prj_number):
     config = configparser.ConfigParser()
@@ -28,16 +28,19 @@ def fetch_config(prj_number):
     else:
         return None, None
 
-def notify(prj_number, msg):
+
+def notify(prj_number, prj_path, msg):
     slack_token, slack_channel = fetch_config(prj_number)
 
     sc = SlackClient(slack_token)
+
+    notify_text = f"warning - rvt model {prj_number} at path {prj_path} is corrupt! \nsee journal: {msg}"
     
     sc.api_call(
-        "chat.postMessage",
-        channel=slack_channel,
-        text=msg,
-        username="rvt_model_services",
-        #placeholder icon
-        icon_url="http://lorempixel.com/48/48/"
-    )
+                "chat.postMessage",
+                channel=slack_channel,
+                text=notify_text,
+                username="rvt_model_services",
+                # placeholder icon
+                icon_url="http://lorempixel.com/48/48/"
+                )
