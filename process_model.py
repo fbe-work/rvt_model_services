@@ -10,11 +10,13 @@ Arguments:
     full_model_path     revit model path including file name
 
 Options:
-    -h, --help          Show this help screen.
-    --html_path=<html>  path to store html bokeh graphs, default in /commands/qc/*.html
-    --rvt_path=<rvt>    full path to force specific rvt version other than detected
-    --notify            choose to be notified with configured notify module(s)
-    --timeout=<seconds> timeout in seconds before revit process gets terminated
+    -h, --help                   Show this help screen.
+    --html_path=<html>           path to store html bokeh graphs, default in /commands/qc/*.html
+    --rvt_path=<rvt>             full path to force specific rvt version other than detected
+    --rvt_ver=<rvtver>           specify revit version and skip checking revit file version (helpful if opening revit server files)
+    --notify                     choose to be notified with configured notify module(s)
+    --nofilecheck                skips verifying model path actually exists (helpful if opening revit server files)
+    --timeout=<seconds>          timeout in seconds before revit process gets terminated
 """
 
 from docopt import docopt
@@ -187,7 +189,10 @@ model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
 rvt_override_path = args["--rvt_path"]
+rvt_override_version = args["--rvt_ver"]
 notify = args["--notify"]
+disablefilecheck = args["--nofilecheck"]
+
 
 print(colorful.bold_blue(f"+process model job control started with command: {command}"))
 print(colorful.bold_orange('-detected following path structure:'))
@@ -239,7 +244,11 @@ os.environ["RVT_QC_PRJ"] = project_code
 os.environ["RVT_QC_PATH"] = full_model_path
 os.environ["RVT_LOG_PATH"] = paths["logs_dir"]
 
-rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
+if not rvt_override_version:
+    rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
+else:
+    rvt_model_version = rvt_override_version
+
 if not rvt_override_path:
     rvt_install_path = rvt_detector.installed_rvt_detection().get(rvt_model_version)
     if not rvt_install_path:
@@ -253,7 +262,7 @@ cmd_dict, post_proc = command_detection(command, paths["commands_dir"],
                                         rvt_model_version, paths["root_dir"], project_code)
 # print(cmd_dict)
 
-if model_exists:
+if disablefilecheck or model_exists:
     journal = rvt_journal_writer.write_journal(journal_file_path,
                                                rvt_journal_writer.detach_rps_template,
                                                full_model_path,
