@@ -30,6 +30,7 @@ import rps_xml
 import rvt_journal_writer
 import rvt_journal_parser
 import rvt_detector
+import win_utils
 from collections import defaultdict
 from importlib import machinery
 from notify.email import send_mail
@@ -160,12 +161,20 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
     return com_dict, post_proc_dict
 
 
-def get_child_journal(process):
+def get_child_journal(process, journal_file_path):
     open_files = process.open_files()
     for proc_file in open_files:
         file_name = op.basename(proc_file.path)
         if file_name.startswith("journal"):
             return proc_file.path
+
+    # if nothing found using the process.open_files
+    # dig deeper and get nasty
+    for proc_res in win_utils.proc_open_files(process):
+        res_name = op.basename(proc_res)
+        if res_name.startswith("journal") \
+            and res_name.endswith("txt"):
+            return op.join(journal_file_path, res_name)
 
 
 args = docopt(__doc__)
@@ -282,7 +291,7 @@ if model_exists:
     print(colorful.bold_orange("-process countdown:"))
     print(f" timeout until termination of process: {child_pid} - {proc_name_colored}:")
 
-    log_journal = get_child_journal(child_proc)
+    log_journal = get_child_journal(child_proc, paths["journals_dir"])
     return_code = None
     return_logging = logging.info
 
