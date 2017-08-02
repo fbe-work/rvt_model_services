@@ -8,14 +8,14 @@ python micro framework to process actions on revit models from cli/command line
   * if the journal file cannot be run to completion the subprocess is killed and an error is logged. the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
 
 ## it requires/is currently run on:
-  * cpython >= 3.6 (with additional modules: beautifulsoup4, bokeh, colorama, colorful, docopt, numpy, pandas, psutil, olefile)
+  * cpython >= 3.6 (with additional modules)<br/>run `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient` to install modules on your machine
   * [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) >= 2017.03.07
   * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2)
   * see install_guide for help/further information.
 
 ## how to get started:
   * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats (qc meaning "quality check" in this context)) in three steps:
-  * step 1: create a revitpythonshell button<br> 
+  * step 1: create a revitpythonshell button<br>
     setup in RPS:   
     in your targeted Revit version add a RPS button "model_qc":
     "Add-Ins > RevitPythonShell > Configure", Add:
@@ -23,8 +23,8 @@ python micro framework to process actions on revit models from cli/command line
     Path: X:\your_path_to_the_cloned_repo\rvt_model_services\commands\qc\rps_qc_model.py
     restart Revit to check if the Button appears.
     click on it to see if the message window appears and gives you a few stats on the current model.
-    
-  * step 2: run a qc read out from cli<br> 
+
+  * step 2: run a qc read out from cli<br>
     run process_model.py from command line:
     now we can run the qc_model without even touching Revit and get interactive html graphs produced.
     Compose a command consisting of the following:
@@ -44,12 +44,12 @@ python micro framework to process actions on revit models from cli/command line
     123_N<br>
     D:/testmodel/123_N.rvt<br>
     --timeout 600<br>
-    
+
     Just concatenate it (put it into one line).<br>
     Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.<br>
     If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.
     Here is how this looks on my screen:
-    
+
     ![cmder_screenshot][cmder_02]   
 
   * step 3: let task scheduler repeat your task<br>
@@ -66,32 +66,32 @@ python micro framework to process actions on revit models from cli/command line
         - Finish and test if it works: "Right-Click > Run"
 
 ## typical use cases(recurring tasks run via schedule Task Scheduler):
-  * extraction of qc data to be gathered in csv table and visualized on interactive html graphs using bokeh 
+  * extraction of qc data to be gathered in csv table and visualized on interactive html graphs using bokeh
   * check on model corruption with audit canary
   * export of DWF, DWG, PDF or IFC (so far only DWF export implemented)
   * export model warnings (API-less journal file warnings export)
 
 ## currently implemented tasks:
   * qc: rvt model qc statistics on workshared models<br>
-  
-    ![qc_elements_graph][qc_01] 
-  
+
+    ![qc_elements_graph][qc_01]
+
   * dwf: dwf sheet exports of sheet set "Auto_PDF_DWF" on workshared models<br>
   * warnings: model warnings export on workshared models<br>
-  
-    ![warnings_graph][warnings_01] 
-  
+
+    ![warnings_graph][warnings_01]
+
   * pulse: bokeh graph showing the job log graphically(which project was process in what time, did it timeout -> red bar).<br>
     run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
-    
-    ![pulse_graph][pulse_01] 
-    
+
+    ![pulse_graph][pulse_01]
+
   * audit: bokeh graph showing the rusult of models being opened with "audit".<br>
     if configured an email will be sent if the model is corrupt. see readme for email config guide in notify/email/<br>
     success: green, unclassified error:orange, corrupt model: red.<br>
     run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
-    
-    ![pulse_graph][audit_pulse_01] 
+
+    ![pulse_graph][audit_pulse_01]
 
 ## how to extend:
   * rvt_model_services was created with extendibility in mind. if you wish to extend the functionality, just create a folder with the name of your custom command. place a __init__.py in it as you can find it in the other built-in commands. in this init file you would define your command name request rps script buttons and be able to overwrite addin and journal template.

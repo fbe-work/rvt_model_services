@@ -10,11 +10,13 @@ Arguments:
     full_model_path     revit model path including file name
 
 Options:
-    -h, --help          Show this help screen.
-    --html_path=<html>  path to store html bokeh graphs, default in /commands/qc/*.html
-    --rvt_path=<rvt>    full path to force specific rvt version other than detected
-    --notify            choose to be notified with configured notify module(s)
-    --timeout=<seconds> timeout in seconds before revit process gets terminated
+    -h, --help                   Show this help screen.
+    --html_path=<html>           path to store html bokeh graphs, default in /commands/qc/*.html
+    --rvt_path=<rvt>             full path to force specific rvt version other than detected
+    --rvt_ver=<rvtver>           specify revit version and skip checking revit file version (helpful if opening revit server files)
+    --notify                     choose to be notified with configured notify module(s)
+    --nofilecheck                skips verifying model path actually exists (helpful if opening revit server files)
+    --timeout=<seconds>          timeout in seconds before revit process gets terminated
 """
 
 from docopt import docopt
@@ -30,6 +32,7 @@ import rps_xml
 import rvt_journal_writer
 import rvt_journal_parser
 import rvt_detector
+import win_utils
 from collections import defaultdict
 from importlib import machinery
 from notify.email import send_mail
@@ -160,12 +163,20 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
     return com_dict, post_proc_dict
 
 
-def get_child_journal(process):
+def get_child_journal(process, journal_file_path):
     open_files = process.open_files()
     for proc_file in open_files:
         file_name = op.basename(proc_file.path)
         if file_name.startswith("journal"):
             return proc_file.path
+
+    # if nothing found using the process.open_files
+    # dig deeper and get nasty
+    for proc_res in win_utils.proc_open_files(process):
+        res_name = op.basename(proc_res)
+        if res_name.startswith("journal") \
+            and res_name.endswith("txt"):
+            return op.join(journal_file_path, res_name)
 
 
 args = docopt(__doc__)
@@ -178,7 +189,10 @@ model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
 rvt_override_path = args["--rvt_path"]
+rvt_override_version = args["--rvt_ver"]
 notify = args["--notify"]
+disablefilecheck = args["--nofilecheck"]
+
 
 print(colorful.bold_blue(f"+process model job control started with command: {command}"))
 print(colorful.bold_orange('-detected following path structure:'))
@@ -230,7 +244,11 @@ os.environ["RVT_QC_PRJ"] = project_code
 os.environ["RVT_QC_PATH"] = full_model_path
 os.environ["RVT_LOG_PATH"] = paths["logs_dir"]
 
-rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
+if not rvt_override_version:
+    rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
+else:
+    rvt_model_version = rvt_override_version
+
 if not rvt_override_path:
     rvt_install_path = rvt_detector.installed_rvt_detection().get(rvt_model_version)
     if not rvt_install_path:
@@ -244,7 +262,7 @@ cmd_dict, post_proc = command_detection(command, paths["commands_dir"],
                                         rvt_model_version, paths["root_dir"], project_code)
 # print(cmd_dict)
 
-if model_exists:
+if disablefilecheck or model_exists:
     journal = rvt_journal_writer.write_journal(journal_file_path,
                                                rvt_journal_writer.detach_rps_template,
                                                full_model_path,
@@ -282,7 +300,7 @@ if model_exists:
     print(colorful.bold_orange("-process countdown:"))
     print(f" timeout until termination of process: {child_pid} - {proc_name_colored}:")
 
-    log_journal = get_child_journal(child_proc)
+    log_journal = get_child_journal(child_proc, paths["journals_dir"])
     return_code = None
     return_logging = logging.info
 
