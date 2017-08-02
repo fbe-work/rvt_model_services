@@ -12,6 +12,7 @@ Arguments:
 Options:
     -h, --help                   Show this help screen.
     --html_path=<html>           path to store html bokeh graphs, default in /commands/qc/*.html
+    --rvt_args=<app_args>        arguments to be passed to revit application like '/nosplash'
     --rvt_path=<rvt>             full path to force specific rvt version other than detected
     --rvt_ver=<rvtver>           specify revit version and skip checking revit file version
                                  (helpful if opening revit server files)
@@ -75,16 +76,27 @@ def get_paths_dict():
     return path_dict
 
 
-def rvt_journal_run(program, journal_file, cwd):
+def rvt_journal_run(program, program_args, journal_file, cwd):
     """
     Starts an instance of rvt processing the instructions of the journal file.
     :param cwd: work directory for rvt journal exec
     :param program: executable to start
+    :param program_args: additional revit program flags
     :param journal_file: journal file path as command argument
     :return:
     """
-    return psutil.Popen([program, journal_file], cwd=cwd,
-                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if program_args:
+        return psutil.Popen(
+                            [program, journal_file, program_args],
+                            cwd=cwd, shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                            )
+    else:
+        return psutil.Popen(
+                            [program, journal_file],
+                            cwd=cwd, shell=True,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                            )
 
 
 def exit_with_log(message):
@@ -190,6 +202,7 @@ model_path = op.dirname(full_model_path)
 model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
+rvt_app_args = args["--rvt_args"]
 rvt_override_path = args["--rvt_path"]
 rvt_override_version = args["--rvt_ver"]
 notify = args["--notify"]
@@ -277,7 +290,7 @@ if disablefilecheck or model_exists:
                                                rvt_model_version,
                                                )
 
-    run_proc = rvt_journal_run(rvt_install_path, journal_file_path, paths["root_dir"])
+    run_proc = rvt_journal_run(rvt_install_path, rvt_app_args, journal_file_path, paths["root_dir"])
     run_proc_id = run_proc.pid
     run_proc_name = run_proc.name()
 
