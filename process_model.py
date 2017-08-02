@@ -13,9 +13,11 @@ Options:
     -h, --help                   Show this help screen.
     --html_path=<html>           path to store html bokeh graphs, default in /commands/qc/*.html
     --rvt_path=<rvt>             full path to force specific rvt version other than detected
-    --rvt_ver=<rvtver>           specify revit version and skip checking revit file version (helpful if opening revit server files)
+    --rvt_ver=<rvtver>           specify revit version and skip checking revit file version
+                                 (helpful if opening revit server files)
     --notify                     choose to be notified with configured notify module(s)
-    --nofilecheck                skips verifying model path actually exists (helpful if opening revit server files)
+    --nofilecheck                skips verifying model path actually exists
+                                 (helpful if opening revit server files)
     --timeout=<seconds>          timeout in seconds before revit process gets terminated
 """
 
@@ -23,7 +25,6 @@ from docopt import docopt
 import os.path as op
 import os
 import subprocess
-import importlib
 import psutil
 import time
 import logging
@@ -31,6 +32,7 @@ import colorful
 import rps_xml
 import rvt_journal_writer
 import rvt_journal_parser
+import rvt_journal_purger
 import rvt_detector
 import win_utils
 from collections import defaultdict
@@ -117,8 +119,8 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
             # print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
             if op.exists(f"{commands_dir}/{command_name}/__init__.py"):
                 mod = machinery.SourceFileLoader(command_name, op.join(commands_dir,
-                                                                                 command_name,
-                                                                                 "__init__.py")).load_module()
+                                                                       command_name,
+                                                                       "__init__.py")).load_module()
             else:
                 print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
                 exit_with_log('__init__.py in command directory not found')
@@ -163,7 +165,7 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
     return com_dict, post_proc_dict
 
 
-def get_child_journal(process, journal_file_path):
+def get_child_journal(process, jrn_file_path):
     open_files = process.open_files()
     for proc_file in open_files:
         file_name = op.basename(proc_file.path)
@@ -176,7 +178,7 @@ def get_child_journal(process, journal_file_path):
         res_name = op.basename(proc_res)
         if res_name.startswith("journal") \
             and res_name.endswith("txt"):
-            return op.join(journal_file_path, res_name)
+            return op.join(jrn_file_path, res_name)
 
 
 args = docopt(__doc__)
@@ -353,6 +355,9 @@ if disablefilecheck or model_exists:
     # write log according to return code
     logged_journal_excerpt = log_journal_result.strip('\n').strip('\r')
     return_logging(f"{project_code};{current_proc_hash};{return_code};;{logged_journal_excerpt}")
+
+    # finally journal cleanup
+    rvt_journal_purger.purge(paths["journals_dir"])
 
 else:
     print("model not found")
