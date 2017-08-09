@@ -8,7 +8,10 @@ python micro framework to process actions on revit models from cli/command line
   * if the journal file cannot be run to completion the subprocess is killed and an error is logged. the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
 
 ## it requires/is currently run on:
-  * cpython >= 3.6 (with additional modules)<br/>run `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient` to install modules on your machine
+  * cpython >= 3.6 (with additional modules)<br/>
+    to install modules on your machine run<br>
+    `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient`
+    
   * [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) >= 2017.03.07
   * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2)
   * see install_guide for help/further information.
@@ -37,20 +40,22 @@ python micro framework to process actions on revit models from cli/command line
     a timeout for the process (optional - default is 60 seconds)<br>
 
     so it could look like this:
-
+    
+    ```
     "C:\Program Files\Python36\python.exe"<br>
-    D:/testrun/934_rvt_model_services/process_model.py<br>
-    qc<br>
-    123_N<br>
-    D:/testmodel/123_N.rvt<br>
-    --timeout 600<br>
+    D:/testrun/934_rvt_model_services/process_model.py
+    qc
+    123_N
+    D:/testmodel/123_N.rvt
+    --timeout 600
+    ```
 
     Just concatenate it (put it into one line).<br>
     Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.<br>
-    If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.
+    If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.<br>
     Here is how this looks on my screen:
 
-    ![cmder_screenshot][cmder_02]   
+    ![cmder_screenshot][cmder_02]
 
   * step 3: let task scheduler repeat your task<br>
     for recurring tasks hook it up to Windows® task scheduler:
@@ -64,6 +69,18 @@ python micro framework to process actions on revit models from cli/command line
             Add Arguments:<br>
                 D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600 <br>
         - Finish and test if it works: "Right-Click > Run"
+
+## further options:    
+  * If you are too lazy to type the path for different projects all the time (like me) you can set them up in a config.ini like this:<br>
+
+    ```
+    [123_N]
+    path = D:/testmodel/123_N.rvt
+    ```
+    With this setup you can substitue the actual full_model_path in your command with just: `cfg`
+    
+  * If you want to get notified on model corruption or circular links just add the flag `--notify`
+    to setup notifications (currently email or slack) refer to the README.md of the notify module.
 
 ## typical use cases(recurring tasks run via schedule Task Scheduler):
   * extraction of qc data to be gathered in csv table and visualized on interactive html graphs using bokeh
@@ -105,6 +122,7 @@ python micro framework to process actions on revit models from cli/command line
     * task will not run to completion if confronted with any unexpected messages<br>
   - of this framework:
     * do not schedule overlapping readouts, the simple pandas code is not (yet) prepared to handle this in the graphs
+    * if you want to use windows network paths use the `--nofilecheck` option
 
 ## credits
  * Frederic Beaupere (original version, maintainer)
