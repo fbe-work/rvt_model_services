@@ -7,6 +7,9 @@ commands/*
 !commands/audit/
 !commands/cookiecutter/
 
+# ignore config.ini
+config.ini
+
 # rvt_model_services logs
 logs/*
 !logs/README.md
