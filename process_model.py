@@ -3,23 +3,23 @@ Usage:
     process_model.py    <command> <project_code> <full_model_path> [options]
 
 Arguments:
-    command             action to be run on model, like: qc or dwf
-                        currently available: qc, dwf
-    project_code        unique project code consisting of 'projectnumber_projectModelPart'
-                        like 456_11 , 416_T99 or 377_S
-    full_model_path     revit model path including file name
-                        use cfg shortcut if your full model path is already set in config.ini
+    command                 action to be run on model, like: qc or dwf
+                            currently available: qc, dwf
+    project_code            unique project code consisting of 'projectnumber_projectModelPart'
+                            like 456_11 , 416_T99 or 377_S
+    full_model_path         revit model path including file name
+                            use cfg shortcut if your full model path is already set in config.ini
 
 Options:
-    -h, --help                   Show this help screen.
-    --html_path=<html>           path to store html bokeh graphs, default in /commands/qc/*.html
-    --rvt_path=<rvt>             full path to force specific rvt version other than detected
-    --rvt_ver=<rvtver>           specify revit version and skip checking revit file version
-                                 (helpful if opening revit server files)
-    --notify                     choose to be notified with configured notify module(s)
-    --nofilecheck                skips verifying model path actually exists
-                                 (helpful if opening revit server files)
-    --timeout=<seconds>          timeout in seconds before revit process gets terminated
+    -h, --help              Show this help screen.
+    --html_path=<html>      path to store html bokeh graphs, default in /commands/qc/*.html
+    --rvt_path=<rvt>        full path to force specific rvt version other than detected
+    --rvt_ver=<rvtver>      specify revit version and skip checking revit file version
+                            (helpful if opening revit server files)
+    --notify                choose to be notified with configured notify module(s)
+    --nofilecheck           skips verifying model path actually exists
+                            (helpful if opening revit server files)
+    --timeout=<seconds>     timeout in seconds before revit process gets terminated
 """
 
 from docopt import docopt
