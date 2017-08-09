@@ -8,6 +8,7 @@ Arguments:
     project_code        unique project code consisting of 'projectnumber_projectModelPart'
                         like 456_11 , 416_T99 or 377_S
     full_model_path     revit model path including file name
+                        use cfg shortcut if your full model path is already set in config.ini
 
 Options:
     -h, --help                   Show this help screen.
@@ -26,6 +27,7 @@ import os.path as op
 import os
 import subprocess
 import psutil
+import configparser
 import time
 import logging
 import colorful
@@ -41,7 +43,6 @@ from notify.email import send_mail
 from notify.slack import send_slack
 
 # TODO make rvt_pulse available from process model?
-# TODO generalize notify with optional cli arguments
 # TODO generalize post processing so it can be populated from command
 
 
@@ -69,10 +70,21 @@ def get_paths_dict():
     path_dict["com_warnings_dir"] = com_warnings_dir
     path_dict["com_qc_dir"] = com_qc_dir
 
-    for pathname in path_dict.keys():
-        print(" {} - {}".format(pathname, path_dict[pathname]))
-
     return path_dict
+
+
+def check_cfg_path(prj_number, cfg_str_or_path, cfg_path):
+    config = configparser.ConfigParser()
+    ini_file = op.join(cfg_path, "config.ini")
+    if cfg_str_or_path == "cfg":
+        if not op.exists(cfg_str_or_path):
+            if op.exists(ini_file):
+                config.read(ini_file)
+                if prj_number in config:
+                    config_path = config[prj_number]["path"]
+                    return config_path
+
+    return cfg_str_or_path
 
 
 def rvt_journal_run(program, journal_file, cwd):
@@ -185,11 +197,14 @@ def get_rvt_proc_journal(process, jrn_file_path):
             return op.join(jrn_file_path, res_name)
 
 
+paths = get_paths_dict()
+
 args = docopt(__doc__)
 
 command = args["<command>"]
 project_code = args["<project_code>"]
 full_model_path = args["<full_model_path>"]
+full_model_path = check_cfg_path(project_code, full_model_path, paths["root_dir"])
 model_path = op.dirname(full_model_path)
 model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
@@ -199,12 +214,11 @@ rvt_override_version = args["--rvt_ver"]
 notify = args["--notify"]
 disablefilecheck = args["--nofilecheck"]
 
+comma_concat_args = ",".join([f"{k}={v}" for k, v in args.items()])
 
 print(colorful.bold_blue(f"+process model job control started with command: {command}"))
-print(colorful.bold_orange('-detected following path structure:'))
-paths = get_paths_dict()
-
-comma_concat_args = ",".join([f"{k}={v}" for k, v in args.items()])
+print(colorful.bold_orange(f"-detected following root path path:"))
+print(f" {paths['root_dir']}")
 
 journal_file_path = op.join(paths["journals_dir"], project_code + ".txt")
 model_exists = op.exists(full_model_path)
@@ -285,7 +299,7 @@ if disablefilecheck or model_exists:
     run_proc_id = run_proc.pid
     run_proc_name = run_proc.name()
 
-    # let's wait a second for rvt process to fire up
+    # let's wait half a second for rvt process to fire up
     time.sleep(0.5)
 
     if run_proc.name() == "Revit.exe":
@@ -298,8 +312,8 @@ if disablefilecheck or model_exists:
     print(colorful.bold_orange(f"-detected revit: {rvt_model_version}"))
     print(f" version:{rvt_model_version} at path: {rvt_install_path}")
 
-    print(colorful.bold_orange("-process countdown:"))
-    print(f" timeout until termination of process: {run_proc_id} - {proc_name_colored}:")
+    print(colorful.bold_orange("-process termination countdown:"))
+    # print(f" timeout until termination of process: {run_proc_id} - {proc_name_colored}:")
 
     log_journal = get_rvt_proc_journal(run_proc, paths["journals_dir"])
     return_code = None
@@ -321,7 +335,7 @@ if disablefilecheck or model_exists:
             print("\n")
             print(colorful.bold_red(" timeout!!"))
             if not poll:
-                print(colorful.bold_red(f" kill child process now: {child_pid}"))
+                print(colorful.bold_red(f" kill process now: {run_proc_id}"))
                 run_proc.kill()
                 # retrieving warnings will always result in a terminated rvt session.
                 # expected behavior -> ret: 0 for warnings
@@ -338,7 +352,7 @@ if disablefilecheck or model_exists:
     log_journal_result = rvt_journal_parser.read_journal(log_journal)
     log_journal_result = ",".join([f"{k}: {v}" for k, v in log_journal_result.items()])
     if log_journal_result:
-        print(f" detected post process parsing: {log_journal_result}")
+        print(f" detected: {log_journal_result}")
         if "corrupt" in log_journal_result:
             return_logging = logging.critical
             # for now let's try all notify modules later we will specify
