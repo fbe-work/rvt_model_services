@@ -42,7 +42,7 @@ python micro framework to process actions on revit models from cli/command line
     so it could look like this:
     
     ```
-    "C:\Program Files\Python36\python.exe"<br>
+    "C:\Program Files\Python36\python.exe"
     D:/testrun/934_rvt_model_services/process_model.py
     qc
     123_N
