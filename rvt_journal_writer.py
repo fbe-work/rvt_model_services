@@ -45,10 +45,9 @@ def write_addin(addin_file_path, addin_template, rvt_version):
     return addin_file_path
 
 
-detach_rps_template = """' 0:< 'C 27-Oct-2016 19:33:31.459;
+detach_rps_template = """'# 0:< rvt_model_service generated. [detach_rps_template] start rvt:
 Dim Jrn
 Set Jrn = CrsJournalScript
- Jrn.Command "Internal" , "Show or hide recent files , ID_STARTUP_PAGE"
  Jrn.Command "Internal" , "Open an existing project , ID_REVIT_FILE_OPEN"
  Jrn.Data "FileOpenSubDialog" , "OpenAsLocalCheckBox", "True"
  Jrn.Data "FileOpenSubDialog" , "DetachCheckBox", "True"
@@ -63,10 +62,9 @@ Set Jrn = CrsJournalScript
  Jrn.Data "TaskDialogResult" , "Do you want to save changes to Untitled?", "No", "IDNO"
  """
 
-audit_detach_template = """' 0:< 'C 27-Oct-2016 19:33:31.459;
+audit_detach_template = """'# 0:< rvt_model_service generated. [audit_detach_template] start rvt:
 Dim Jrn
 Set Jrn = CrsJournalScript
- Jrn.Command "Internal" , "Show or hide recent files , ID_STARTUP_PAGE"
  Jrn.Command "Internal" , "Open an existing project , ID_REVIT_FILE_OPEN"
  Jrn.Data "FileOpenSubDialog" , "OpenAsLocalCheckBox", "True"
  Jrn.Data "FileOpenSubDialog" , "DetachCheckBox", "True"
@@ -79,7 +77,7 @@ Set Jrn = CrsJournalScript
  Jrn.Directive "DocSymbol" , "[]"{1}
  Jrn.Command "SystemMenu" , "Quit the application; prompts to save projects , ID_APP_EXIT"
  Jrn.Data "TaskDialogResult" , "Do you want to save changes to Untitled?", "No", "IDNO"
- """
+"""
 
 export_warnings_template = """ Jrn.RibbonEvent "TabActivated:Manage"
  Jrn.Command "Ribbon" , "Review previously posted warnings , ID_REVIEW_WARNINGS"
@@ -134,8 +132,8 @@ Set Jrn = CrsJournalScript
  Jrn.Data "TaskDialogResult" , "This operation can take a long time. Recommended use includes periodic maintenance of large files and preparation for upgrading to a new release. Do you want to continue?",  "Yes", "IDYES"
 """,
 
-"open_file":
-"""'# open_file:
+"open_file_path":
+"""'# open_file_path:
  Jrn.Data "File Name" , "IDOK",{0}
 """,
 
