@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>RMSCmdExecutor</Name>
+    <Assembly>..\executor\RMSCmdExecutor\bin\Release\RMSCmdExecutor.dll</Assembly>
+    <AddInId>f1c4f3a9-19b9-4536-adf3-328c237680da</AddInId>
+    <FullClassName>RMSCmdExecutor.RMSCmdExecutorApp</FullClassName>
+  <VendorId>eirannejad</VendorId>
+  </AddIn>
+</RevitAddIns>
