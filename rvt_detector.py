@@ -1,7 +1,15 @@
+"""
+Simple helper to:
+ - detect the version of a .rvt file.
+ - detect installed Autodesk Revit versions. (windows only)
+"""
+
 import winreg
 import sys
 import re
 import olefile
+
+__version__ = "0.1.0"
 
 
 def get_rvt_file_version(rvt_file):
