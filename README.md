@@ -10,7 +10,7 @@ python micro framework to process actions on revit models from cli/command line
 ## it requires/is currently run on:
   * cpython >= 3.6 (with additional modules)<br/>
     to install modules on your machine run<br>
-    `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient`
+    `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient rvt_detector`
     
   * [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) >= 2017.03.07
   * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2)
