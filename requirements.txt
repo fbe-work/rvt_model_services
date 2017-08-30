@@ -8,5 +8,5 @@ pandas==0.19.2
 psutil==5.2.2
 olefile==0.44
 slackclient==1.0.6
-rvt_detector==0.1.0
+rvt_detector==0.2.0
 rjm==1.0.0
