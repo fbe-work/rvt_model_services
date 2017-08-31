@@ -33,6 +33,7 @@ commands/audit/*.html
 # rvt_model_services journals files
 journals/*
 !journals/README.md
+!journals/RMSExecutor.addin
 
 # rvt_model_services mail notifier
 notify/email/*
