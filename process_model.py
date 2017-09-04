@@ -26,8 +26,8 @@ Options:
 """
 
 from docopt import docopt
-import os.path as op
 import os
+import os.path as op
 import subprocess
 import psutil
 import configparser
@@ -35,7 +35,6 @@ import time
 import logging
 import colorful
 import rps_xml
-import rvt_journal_writer
 import rvt_journal_parser
 import rvt_journal_purger
 import rvt_detector
@@ -150,17 +149,13 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
             if "register" in dir(mod):
                 if mod.register["name"] == command_name:
                     # print("command_name found!")
+                    if "rjm" in mod.register:
+                        module_rjm = mod.register["rjm"]
                     if "get_rps_button" in mod.register:
                         # print("needs rps button")
                         button_name = mod.register["get_rps_button"]
                         rps_button = rps_xml.get_rps_button(rps_xml.find_xml_command(rvt_ver, ""), button_name)
                         com_dict[command_name] = rps_button
-                    if "override_jrn_template" in mod.register:
-                        rvt_journal_writer.detach_rps_template = mod.register["override_jrn_template"]
-                        # print("journal template overridden")
-                    if "override_addin_template" in mod.register:
-                        rvt_journal_writer.rps_addin_template = mod.register["override_addin_template"]
-                        # print("journal addin overridden")
                     if "override_jrn_command" in mod.register:
                         warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
                         override_command = mod.register["override_jrn_command"].format(warnings_command_dir,
@@ -174,8 +169,6 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                             external_args.append(globals().get(arg))
                         post_proc_dict["func"] = mod.register["post_process"]["func"]
                         post_proc_dict["args"] = external_args
-                    if "rjm" in mod.register:
-                        module_rjm = mod.register["rjm"]
 
             if not com_dict:
                 com_dict[command_name] = "' "
@@ -311,7 +304,7 @@ if disable_filecheck or model_exists:
 
     print(f" process info: {run_proc_id} - {proc_name_colored}")
 
-    print(colorful.bold_orange(f"-detected revit: {rvt_model_version}"))
+    print(colorful.bold_orange("-detected revit:"))
     print(f" version:{rvt_model_version} at path: {rvt_install_path}")
 
     print(colorful.bold_orange("-process termination countdown:"))
