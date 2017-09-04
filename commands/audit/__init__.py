@@ -1,3 +1,18 @@
+import rjm
+import os.path as op
+
+
+def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
+    com_audit_dir = op.join(com_dir, op.basename(op.dirname(__file__)))
+    rvt_jrn = rjm.JournalMaker()
+    rvt_jrn.open_workshared_model(model_path=model_path,
+                                  detached=True,
+                                  audit=True
+                                  )
+    rvt_jrn.close_model()
+    rvt_jrn.write_journal(jrn_path)
+
+
 override_jrn_template = """' 0:< 'C 27-Oct-2016 19:33:31.459;
 Dim Jrn
 Set Jrn = CrsJournalScript
@@ -18,4 +33,5 @@ Set Jrn = CrsJournalScript
 
 register = {"name": "audit",
             "override_jrn_template": override_jrn_template,
+            "rjm": cmd_journal,
             }
