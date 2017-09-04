@@ -16,6 +16,9 @@ Options:
     --rvt_path=<rvt>        full path to force specific rvt version other than detected
     --rvt_ver=<rvtver>      specify revit version and skip checking revit file version
                             (helpful if opening revit server files)
+    --audit                 activate open model with audit
+    --noworkshared          open non-workshared model
+    --nodetach              do not open workshared model detached
     --notify                choose to be notified with configured notify module(s)
     --nofilecheck           skips verifying model path actually exists
                             (helpful if opening revit server files)
@@ -42,6 +45,7 @@ from importlib import machinery
 from notify.email import send_mail
 from notify.slack import send_slack
 
+# TODO remove rps referencing constructs
 # TODO make rvt_pulse available from process model?
 # TODO generalize post processing so it can be populated from command
 
@@ -127,6 +131,8 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
     com_dict = defaultdict()
     post_proc_dict = defaultdict()
     found_dir = False
+    module_rjm = None
+
     for directory in os.scandir(commands_dir):
         command_name = directory.name
         # print(command_name)
@@ -168,6 +174,8 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                             external_args.append(globals().get(arg))
                         post_proc_dict["func"] = mod.register["post_process"]["func"]
                         post_proc_dict["args"] = external_args
+                    if "rjm" in mod.register:
+                        module_rjm = mod.register["rjm"]
 
             if not com_dict:
                 com_dict[command_name] = "' "
@@ -178,7 +186,7 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
         exit_with_log('command directory not found')
 
     # print(com_dict)
-    return com_dict, post_proc_dict
+    return com_dict, post_proc_dict, module_rjm
 
 
 def get_rvt_proc_journal(process, jrn_file_path):
@@ -212,7 +220,10 @@ html_path = args["--html_path"]
 rvt_override_path = args["--rvt_path"]
 rvt_override_version = args["--rvt_ver"]
 notify = args["--notify"]
-disablefilecheck = args["--nofilecheck"]
+disable_filecheck = args["--nofilecheck"]
+disable_detach = args["--nodetach"]
+disable_ws = args["--noworkshared"]
+audit = args["--audit"]
 
 comma_concat_args = ",".join([f"{k}={v}" for k, v in args.items()])
 
@@ -278,22 +289,13 @@ if not rvt_override_path:
 else:
     rvt_install_path = rvt_override_path
 
-cmd_dict, post_proc = command_detection(command, paths["commands_dir"],
-                                        rvt_model_version, paths["root_dir"], project_code)
+cmd_dict, post_proc, mod_rjm = command_detection(command, paths["commands_dir"],
+                                                 rvt_model_version, paths["root_dir"], project_code)
 # print(cmd_dict)
 
-if disablefilecheck or model_exists:
-    journal = rvt_journal_writer.write_journal(journal_file_path,
-                                               rvt_journal_writer.detach_rps_template,
-                                               full_model_path,
-                                               cmd_dict[command],
-                                               )
-
-    addin_file_path = op.join(paths["journals_dir"], "RevitPythonShell.addin")
-    rps_addin = rvt_journal_writer.write_addin(addin_file_path,
-                                               rvt_journal_writer.rps_addin_template,
-                                               rvt_model_version,
-                                               )
+if disable_filecheck or model_exists:
+    mod_rjm(project_code, full_model_path, journal_file_path,
+            paths["commands_dir"], paths["logs_dir"])
 
     run_proc = rvt_journal_run(rvt_install_path, journal_file_path, paths["root_dir"])
     run_proc_id = run_proc.pid
