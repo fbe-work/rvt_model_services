@@ -6,7 +6,6 @@ from . import cookie
 def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
     op.basename(op.dirname(__file__))
     coo_qc_dir = op.join(com_dir, op.basename(op.dirname(__file__)))
-    jrn_path = "d:/delme/{0}".format(project_code + ".txt")  # delme temporary deviation
     rvt_jrn = rjm.JournalMaker()
     rvt_jrn.open_workshared_model(model_path=model_path,
                                   detached=True,
