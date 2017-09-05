@@ -34,7 +34,6 @@ import configparser
 import time
 import logging
 import colorful
-import rps_xml
 import rvt_journal_parser
 import rvt_journal_purger
 import rvt_detector
@@ -90,22 +89,6 @@ def check_cfg_path(prj_number, cfg_str_or_path, cfg_path):
     return cfg_str_or_path
 
 
-def rvt_journal_run(program, journal_file, cwd):
-    """
-    Starts an instance of rvt processing the instructions of the journal file.
-    :param cwd: work directory for rvt journal exec
-    :param program: executable to start
-    :param program_args: additional revit program flags
-    :param journal_file: journal file path as command argument
-    :return:
-    """
-    return psutil.Popen(
-                        [program, journal_file],
-                        cwd=cwd,
-                        stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                        )
-
-
 def exit_with_log(message):
     """
     Ends the whole script with a warning.
@@ -116,21 +99,17 @@ def exit_with_log(message):
     exit()
 
 
-def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_code):
+def get_jrn_and_post_process(search_command, commands_dir):
     """
     Searches command paths for register dict in __init__.py in command roots to
     prepare appropriate command strings to be inserted into the journal file
     :param search_command: command name to look up
     :param commands_dir: commands directory
-    :param rvt_ver: rvt version
-    :param root_dir:
-    :param project_code:
-    :return:
+    :return: command module, post process dict
     """
-    com_dict = defaultdict()
-    post_proc_dict = defaultdict()
     found_dir = False
     module_rjm = None
+    post_proc_dict = defaultdict()
 
     for directory in os.scandir(commands_dir):
         command_name = directory.name
@@ -151,18 +130,6 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                     # print("command_name found!")
                     if "rjm" in mod.register:
                         module_rjm = mod.register["rjm"]
-                    if "get_rps_button" in mod.register:
-                        # print("needs rps button")
-                        button_name = mod.register["get_rps_button"]
-                        rps_button = rps_xml.get_rps_button(rps_xml.find_xml_command(rvt_ver, ""), button_name)
-                        com_dict[command_name] = rps_button
-                    if "override_jrn_command" in mod.register:
-                        warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
-                        override_command = mod.register["override_jrn_command"].format(warnings_command_dir,
-                                                                                       project_code)
-                        # print(override_command)
-                        com_dict[command_name] = override_command
-                        # print("journal command overridden")
                     if "post_process" in mod.register:
                         external_args = []
                         for arg in mod.register["post_process"]["args"]:
@@ -170,16 +137,11 @@ def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_c
                         post_proc_dict["func"] = mod.register["post_process"]["func"]
                         post_proc_dict["args"] = external_args
 
-            if not com_dict:
-                com_dict[command_name] = "' "
-                # print("com_dict reset")
-
     if not found_dir:
         print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
         exit_with_log('command directory not found')
 
-    # print(com_dict)
-    return com_dict, post_proc_dict, module_rjm
+    return module_rjm, post_proc_dict
 
 
 def get_rvt_proc_journal(process, jrn_file_path):
@@ -193,15 +155,13 @@ def get_rvt_proc_journal(process, jrn_file_path):
     # dig deeper and get nasty
     for proc_res in win_utils.proc_open_files(process):
         res_name = op.basename(proc_res)
-        if res_name.startswith("journal") \
-            and res_name.endswith("txt"):
+        if res_name.startswith("journal") and res_name.endswith("txt"):
             return op.join(jrn_file_path, res_name)
 
 
 paths = get_paths_dict()
 
 args = docopt(__doc__)
-
 command = args["<command>"]
 project_code = args["<project_code>"]
 full_model_path = args["<full_model_path>"]
@@ -282,15 +242,13 @@ if not rvt_override_path:
 else:
     rvt_install_path = rvt_override_path
 
-cmd_dict, post_proc, mod_rjm = command_detection(command, paths["commands_dir"],
-                                                 rvt_model_version, paths["root_dir"], project_code)
-# print(cmd_dict)
+mod_rjm, post_proc = get_jrn_and_post_process(command, paths["commands_dir"])
 
 if disable_filecheck or model_exists:
-    mod_rjm(project_code, full_model_path, journal_file_path,
-            paths["commands_dir"], paths["logs_dir"])
+    mod_rjm(project_code, full_model_path, journal_file_path, paths["commands_dir"], paths["logs_dir"])
 
-    run_proc = rvt_journal_run(rvt_install_path, journal_file_path, paths["root_dir"])
+    run_proc = psutil.Popen([rvt_install_path, journal_file_path],
+                            cwd=paths["root_dir"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     run_proc_id = run_proc.pid
     run_proc_name = run_proc.name()
 
@@ -341,7 +299,7 @@ if disable_filecheck or model_exists:
                     return_code = "0"
                     return_logging = logging.info
 
-    # post loop processing, parsing journal files
+    # post loop processing, naively parsing journal files
     print(colorful.bold_orange("-post process:"))
     print(f" process open journal for post process parsing:\n {log_journal}")
     log_journal_result = rvt_journal_parser.read_journal(log_journal)
@@ -350,7 +308,7 @@ if disable_filecheck or model_exists:
         print(f" detected: {log_journal_result}")
         if "corrupt" in log_journal_result:
             return_logging = logging.critical
-            # for now let's try all notify modules later we will specify
+            # run all notify modules
             if notify:
                 notify_modules = [send_mail, send_slack]
                 for notify_function in notify_modules:
