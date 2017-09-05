@@ -4,20 +4,15 @@ import os.path as op
 
 def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
     com_dwf_dir = op.join(com_dir, op.basename(op.dirname(__file__)))
-    # jrn_path = "d:/delme/{0}".format(project_code + ".txt")  # delme temporary deviation
     rvt_jrn = rjm.JournalMaker(permissive=False)
-    rvt_jrn.open_workshared_model(model_path=model_path,
-                                  detached=True,
-                                  audit=True
-                                  )
+    rvt_jrn.open_workshared_model(model_path=model_path, detached=True, audit=True)
     com_data = {"SearchPaths": com_dwf_dir,
                 "ModelName": op.basename(model_path),
                 "OutputPath": log_dir,
-                "OutputPrefix": "Session_prefix_",
+                "OutputPrefix": project_code,
                 "LogFile": op.join(log_dir, "rms_exec_results.log"),
                 "ScriptSource": op.join(com_dwf_dir, "rps_print_dwf_set.py"),
                 }
-
     rvt_jrn.execute_command(tab_name='Add-Ins',
                             panel_name='  Revit Model Services (RMS)  ',
                             command_module='RMSCmdExecutor',
@@ -29,6 +24,5 @@ def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
 
 
 register = {"name": "dwf",
-            "get_rps_button": "dwf_export",
             "rjm": cmd_journal,
             }
