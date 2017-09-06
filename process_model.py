@@ -3,8 +3,8 @@ Usage:
     process_model.py    <command> <project_code> <full_model_path> [options]
 
 Arguments:
-    command                 action to be run on model, like: qc or dwf
-                            currently available: qc, dwf
+    command                 action to be run on model, like: qc, audit or dwf
+                            currently available: qc, audit, dwf
     project_code            unique project code consisting of 'projectnumber_projectModelPart'
                             like 456_11 , 416_T99 or 377_S
     full_model_path         revit model path including file name
@@ -42,10 +42,6 @@ from collections import defaultdict
 from importlib import machinery
 from notify.email import send_mail
 from notify.slack import send_slack
-
-# TODO remove rps referencing constructs
-# TODO make rvt_pulse available from process model?
-# TODO generalize post processing so it can be populated from command
 
 
 def get_paths_dict():
