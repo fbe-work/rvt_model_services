@@ -11,26 +11,16 @@ python micro framework to process actions on revit models from cli/command line
   * cpython >= 3.6 (with additional modules)<br/>
     to install modules on your machine run<br>
     `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient rvt_detector rjm`
-    
-  * [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) >= 2017.03.07
   * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2)
   * see install_guide for help/further information.
 
 ## how to get started:
-  * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats (qc meaning "quality check" in this context)) in three steps:
-  * step 1: create a revitpythonshell button<br>
-    setup in RPS:   
-    in your targeted Revit version add a RPS button "model_qc":
-    "Add-Ins > RevitPythonShell > Configure", Add:
-    Name: qc_model, Group: rvt_model_services
-    Path: X:\your_path_to_the_cloned_repo\rvt_model_services\commands\qc\rps_qc_model.py
-    restart Revit to check if the Button appears.
-    click on it to see if the message window appears and gives you a few stats on the current model.
+  * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats (qc meaning "quality check" in this context)) in a few steps:
 
-  * step 2: run a qc read out from cli<br>
+  * run a qc read out from cli<br>
     run process_model.py from command line:
     now we can run the qc_model without even touching Revit and get interactive html graphs produced.
-    Compose a command consisting of the following:
+    Compose a command line instruction consisting of the following:
 
     your CPython interpreter<br>
     your path to process_model.py<br>
@@ -50,14 +40,15 @@ python micro framework to process actions on revit models from cli/command line
     --timeout 600
     ```
 
-    Just concatenate it (put it into one line).<br>
+    Just concatenate it (put it into one line):<br>
+    `"C:\Program Files\Python36\python.exe" D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600` <br>
     Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.<br>
     If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.<br>
     Here is how this looks on my screen:
 
     ![cmder_screenshot][cmder_02]
 
-  * step 3: let task scheduler repeat your task<br>
+  * step 2: let task scheduler repeat your task<br>
     for recurring tasks hook it up to Windows® task scheduler:
     Open Task scheduler and create a new basic task<br>
         - give it a name<br>
@@ -111,9 +102,7 @@ python micro framework to process actions on revit models from cli/command line
     ![pulse_graph][audit_pulse_01]
 
 ## how to extend:
-  * rvt_model_services was created with extendibility in mind. if you wish to extend the functionality, just create a folder with the name of your custom command. place a __init__.py in it as you can find it in the other built-in commands. in this init file you would define your command name request rps script buttons and be able to overwrite addin and journal template.
-  * in the spirit of cookiecutter I will soon provide a custom command directory which can be used as a template for your custom action.
-  * if you want to share something, that might be useful to many others feel free to PR.
+  * rvt_model_services was created with extendibility in mind. if you wish to extend the functionality, just copy cookiecutter command and adjust or override.
 
 ## limitations:
   - of journal files:
