@@ -112,13 +112,13 @@ def get_jrn_and_post_process(search_command, commands_dir):
         # print(command_name)
         if search_command == command_name:
             found_dir = True
-            # print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
+            print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
             if op.exists(f"{commands_dir}/{command_name}/__init__.py"):
                 mod = machinery.SourceFileLoader(command_name, op.join(commands_dir,
                                                                        command_name,
                                                                        "__init__.py")).load_module()
             else:
-                print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
+                # print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
                 exit_with_log('__init__.py in command directory not found')
 
             if "register" in dir(mod):
