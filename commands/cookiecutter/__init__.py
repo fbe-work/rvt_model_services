@@ -8,6 +8,7 @@ def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
     coo_qc_dir = op.join(com_dir, op.basename(op.dirname(__file__)))
     rvt_jrn = rjm.JournalMaker()
     rvt_jrn.open_workshared_model(model_path=model_path, detached=True, audit=True)
+    rvt_jrn.add_custom_entry(override_jrn_command.format(project_code))
     com_data = {"SearchPaths": coo_qc_dir,
                 "ModelName": op.basename(model_path),
                 "OutputPath": log_dir,
@@ -24,6 +25,8 @@ def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
     rvt_jrn.close_model()
     rvt_jrn.write_journal(jrn_path)
 
+
+override_jrn_command = """' A template to extend with journal functionality for project: {0}"""
 
 register = {"name": "cookiecutter",
             "post_process": {"func": cookie.says_hi,
