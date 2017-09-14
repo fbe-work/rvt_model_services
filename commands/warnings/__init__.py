@@ -29,5 +29,5 @@ register = {"name": "warnings",
             "rjm": cmd_journal,
             "optional_html_path": True,
             "post_process": {"func": bokeh_warnings_graphs.update_json_and_bokeh,
-                             "args": ["project_code", "html_path"]},
+                             "args": ["project_code", "html_path", "warn_ids_path"]},
             }
