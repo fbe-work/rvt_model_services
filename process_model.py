@@ -13,6 +13,7 @@ Arguments:
 Options:
     -h, --help              Show this help screen.
     --html_path=<html>      path to store html bokeh graphs, default in /commands/qc/*.html
+    --write_warn_ids        write warning ids from warning command
     --rvt_path=<rvt>        full path to force specific rvt version other than detected
     --rvt_ver=<rvtver>      specify revit version and skip checking revit file version
                             (helpful if opening revit server files)
@@ -28,6 +29,7 @@ Options:
 from docopt import docopt
 import os
 import os.path as op
+import pathlib
 import subprocess
 import psutil
 import configparser
@@ -118,7 +120,6 @@ def get_jrn_and_post_process(search_command, commands_dir):
                                                                        command_name,
                                                                        "__init__.py")).load_module()
             else:
-                # print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
                 exit_with_log('__init__.py in command directory not found')
 
             if "register" in dir(mod):
@@ -166,6 +167,7 @@ model_path = op.dirname(full_model_path)
 model_file_name = op.basename(full_model_path)
 timeout = args["--timeout"]
 html_path = args["--html_path"]
+write_warn_ids = args["--write_warn_ids"]
 rvt_override_path = args["--rvt_path"]
 rvt_override_version = args["--rvt_ver"]
 notify = args["--notify"]
@@ -200,6 +202,12 @@ elif not os.path.exists(html_path):
     elif command == "warnings":
         html_path = paths["com_warnings_dir"]
         print(f"your specified html path was not found - will export html graph to {paths['com_warnings_dir']} instead")
+if write_warn_ids:
+    warn_ids_path = op.normpath(op.join(model_path, "RVT_fixme"))
+    pathlib.Path(warn_ids_path).mkdir(exist_ok=True)
+    print(warn_ids_path)
+else:
+    warn_ids_path = ""
 
 job_logging = op.join(paths["logs_dir"], "job_logging.csv")
 header_logging = "time_stamp;level;project;process_hash;error_code;args;comments\n"
