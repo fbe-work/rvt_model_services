@@ -91,8 +91,9 @@ def read_warning_html(html_warnings_file):
                 warning_count[err_type] += 1
 
         html_warnings_df = pd.DataFrame({iso_time_stamp: warning_count})
-
-        return html_warnings_df
+        warnings_id_df = pd.DataFrame({iso_time_stamp: warning_ids})
+        print(warning_ids)
+        return html_warnings_df, warnings_id_df
 
 
 def read_warning_json(warnings_json):
@@ -103,9 +104,9 @@ def read_warning_json(warnings_json):
     return warnings_df
 
 
-def write_warning_json(warning_df, warnings_json):
-    with open(warnings_json, 'w', encoding="utf-8") as warn_json:
-        warning_df.to_json(warn_json, orient="index", date_format="iso")
+def write_df_to_json(df, json_file):
+    with open(json_file, 'w', encoding="utf-8") as jsn:
+        df.to_json(jsn, orient="index", date_format="iso")
 
 
 def write_bokeh_graph(data_frame, html_output, project_code):
@@ -229,8 +230,7 @@ def style_plot(plot):
     return plot
 
 
-def update_json_and_bokeh(project_code, bokeh_html_path=""):
-    pd.set_option('display.width', 1400)
+def update_json_and_bokeh(project_code, bokeh_html_path="", ids_path=""):
     paths = command_get_paths()
 
     if not bokeh_html_path:
@@ -242,11 +242,15 @@ def update_json_and_bokeh(project_code, bokeh_html_path=""):
     warning_json = op.join(paths["warnings_dir"], warning_html.split(".")[0] + ".json")
 
     if html_exists:
-        warn_df = read_warning_html(op.join(paths["warnings_dir"], warning_html))
+        warn_df, warn_ids_df = read_warning_html(op.join(paths["warnings_dir"], warning_html))
         warning_html_date = str(warn_df.columns[0])
 
         print(colorful.bold_orange("\n-read warnings in html: \n"))
         print(warn_df.head())
+        if ids_path:
+            print(warn_ids_df.head())
+            warn_ids_json = op.join(ids_path, warning_html.split(".")[0] + "_warning_ids.json")
+            write_df_to_json(warn_ids_df, warn_ids_json)
         warnings_merged = warn_df
 
         json_update = True
@@ -267,15 +271,15 @@ def update_json_and_bokeh(project_code, bokeh_html_path=""):
                 warnings_merged = pd.concat([warn_df, existing_warnings], axis=1, join="inner")
                 print(colorful.bold_orange("-merged warnings to json: \n"))
                 print(warnings_merged.head())
-                write_warning_json(warnings_merged,
-                                   op.join(paths["warnings_dir"], warning_html.split(".")[0] + ".json"))
+                write_df_to_json(warnings_merged,
+                                 op.join(paths["warnings_dir"], warning_html.split(".")[0] + ".json"))
             else:
                 print(colorful.bold_orange("\n-html warnings already in json."))
                 # warnings_merged = existing_warnings
                 json_update = False
 
         if json_update:
-            write_warning_json(warnings_merged, warning_json)
+            write_df_to_json(warnings_merged, warning_json)
 
         bokeh_html = op.join(bokeh_html_path, warning_html + "warnings_graph.html")
         bokeh_df = write_bokeh_graph(warnings_merged, bokeh_html, project_code)
