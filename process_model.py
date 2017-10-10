@@ -294,14 +294,8 @@ if disable_filecheck or model_exists:
             if not poll:
                 print(colorful.bold_red(f" kill process now: {run_proc_id}"))
                 run_proc.kill()
-                # retrieving warnings will always result in a terminated rvt session.
-                # expected behavior -> ret: 0 for warnings
-                if command != "warnings":
-                    return_code = "1"
-                    return_logging = logging.warning
-                else:
-                    return_code = "0"
-                    return_logging = logging.info
+                return_code = "1"
+                return_logging = logging.warning
 
     # post loop processing, naively parsing journal files
     print(colorful.bold_orange("-post process:"))
