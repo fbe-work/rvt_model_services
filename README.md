@@ -8,7 +8,7 @@ python micro framework to process actions on revit models from cli/command line
   * if the journal file cannot be run to completion the subprocess is killed and an error is logged. the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
 
 ## it requires/is currently run on:
-  * cpython >= 3.6 (with additional modules)<br/>
+  * cpython (64bit recommended) >= 3.6 (with additional modules)<br/>
     to install modules on your machine run<br>
     `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient rvt_detector rjm`
   * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2)
