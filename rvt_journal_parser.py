@@ -30,8 +30,8 @@ def read_journal(journal_path):
             for key_phrase in key_phrases:
                 if key_phrase in decoded_line:
                     print(colorful.bold_red(f"-!!_found:{key_phrases[key_phrase]}_!!"))
-                    print(journal_path)
-                    print(decoded_line)
+                    print(" journal path: {}".format(journal_path))
+                    # print(decoded_line)
                     detected[key_phrases[key_phrase]] = journal_name + decoded_line
                     return detected
     if not detected:
