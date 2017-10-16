@@ -5,6 +5,7 @@ commands/*
 !commands/pulse/
 !commands/warnings/
 !commands/audit/
+!commands/rps_audit/
 !commands/cookiecutter/
 
 # ignore config.ini
