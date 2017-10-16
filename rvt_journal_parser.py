@@ -5,6 +5,7 @@ find specific messages in a given journal file
 to detect model corruption, missing links and the like.
 """
 import os.path as op
+import colorful
 
 model_corrupt = 'orrupt'
 missing_links = 'TaskDialog "Revit could not find or read'
@@ -28,7 +29,7 @@ def read_journal(journal_path):
             decoded_line = line.decode("latin1", "ignore")
             for key_phrase in key_phrases:
                 if key_phrase in decoded_line:
-                    print(f"!!_found:{key_phrases[key_phrase]}_!!")
+                    print(colorful.bold_red(f"-!!_found:{key_phrases[key_phrase]}_!!"))
                     print(journal_path)
                     print(decoded_line)
                     detected[key_phrases[key_phrase]] = journal_name + decoded_line
