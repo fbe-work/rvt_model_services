@@ -26,6 +26,7 @@ var/
 commands/*
 !commands/qc/
 !commands/dwf/
+!commands/dwg/
 !commands/pulse/
 !commands/warnings/
 
