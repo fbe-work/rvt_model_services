@@ -59,7 +59,7 @@ print(html_output_path)
 
 csv_path = op.join(paths["logs_dir"], "job_logging.csv")
 
-color_dict = {0.0: "green", 1.0: "red"}
+log_lvl_color = {"INFO": "green", "WARNING": "orange", "CRITICAL": "red"}
 
 pd.set_option('display.width', 1800)
 df = pd.read_csv(csv_path, sep=";", index_col=False)
@@ -68,12 +68,13 @@ df["time_stamp"] = pd.to_datetime(df["time_stamp"], format="%Y-%m-%d")
 paired_proc_hashes = df.process_hash[df["process_hash"].duplicated()]
 df_paired = df[df['process_hash'].isin(paired_proc_hashes)].copy()
 df_paired["offset_timestamp"] = df_paired.time_stamp.shift(1)
+df_paired["args"] = df_paired.args.shift(1)
 
 df_paired["duration"] = (df_paired["time_stamp"] - df_paired["offset_timestamp"]) / np.timedelta64(1, "s")
 df_paired["minutes"] = df_paired["time_stamp"].dt.strftime("%Y-%m-%d_%H-%M")
 
-df_paired["color"] = df_paired["error_code"].copy()
-df_paired["color"].replace(color_dict, inplace=True)
+df_paired["color"] = df_paired["level"].copy()
+df_paired["color"].replace(log_lvl_color, inplace=True)
 
 # loop over all found projects
 all_projects = df["project"].unique()
@@ -83,31 +84,37 @@ print(all_projects)
 for project in sorted(all_projects):
     print("creating plot for project: {0}".format(project))
 
-    df_project = df_paired[(df_paired["project"] == project) & (df_paired["error_code"] >= 0.0)].copy()
+    df_project = df_paired[(df_paired["project"] == project) &
+                           (df_paired["error_code"] >= 0.0) &
+                           (df_paired["args"].str.contains("qc"))
+                           ].copy()
 
-    print(df_project.head(9))
+    if df_project.empty:
+        print("no data yet for project: {0}".format(project))
+    else:
+        print(df_project.head(9))
 
-    # Bar.help.builders[0].glyph.line_alpha = 0.0 # no effect?
-    plot = Bar(df_project.tail(60), "minutes", values="duration", color="color", title=project,
-               background_fill_alpha=0, border_fill_alpha=0, outline_line_alpha=0,
-               xgrid=False, legend=None, toolbar_location=None,
-               width=900, height=400
-               )
+        # Bar.help.builders[0].glyph.line_alpha = 0.0 # no effect?
+        plot = Bar(df_project.tail(60), "minutes", values="duration", color="color", title=project,
+                   background_fill_alpha=0, border_fill_alpha=0, outline_line_alpha=0,
+                   xgrid=False, legend=None, toolbar_location=None,
+                   width=900, height=400
+                   )
 
-    # plot styling
-    plot.axis.axis_label = None
-    plot.xaxis.axis_label = None
-    plot.axis.major_tick_line_color = None
-    plot.axis.minor_tick_line_color = None
-    # plot.xaxis[0].ticker.desired_num_ticks = 5
-    # plot.xaxis.major_label_text_alpha = 0
-    plot.xaxis.major_label_orientation = pi / 2
+        # plot styling
+        plot.axis.axis_label = None
+        plot.xaxis.axis_label = None
+        plot.axis.major_tick_line_color = None
+        plot.axis.minor_tick_line_color = None
+        # plot.xaxis[0].ticker.desired_num_ticks = 5
+        # plot.xaxis.major_label_text_alpha = 0
+        plot.xaxis.major_label_orientation = pi / 2
 
-    for g in plot.renderers:
-        if "GlyphRenderer" in str(g.__repr__):
-            g.glyph.line_alpha = 0
+        for g in plot.renderers:
+            if "GlyphRenderer" in str(g.__repr__):
+                g.glyph.line_alpha = 0
 
-    all_plots.append(plot)
+        all_plots.append(plot)
 
-output_file(html_output, mode="inline")
+output_file(html_output, title="rvt_pulse", mode="inline")
 save(column(all_plots))

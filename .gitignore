@@ -1,34 +1,16 @@
-### Python
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# ignore all commands except rvt_model_services built-in commands
+# ignore all commands except rvt_model_services built-in commands and cookiecutter template
 commands/*
 !commands/qc/
 !commands/dwf/
 !commands/dwg/
 !commands/pulse/
 !commands/warnings/
+!commands/audit/
+!commands/rps_audit/
+!commands/cookiecutter/
+
+# ignore config.ini
+config.ini
 
 # rvt_model_services logs
 logs/*
@@ -47,9 +29,23 @@ commands/qc/*.html
 # bokeh warnings graph html test pages
 commands/warnings/*.html
 
+# bokeh audit graph html test pages
+commands/audit/*.html
+
 # rvt_model_services journals files
 journals/*
 !journals/README.md
+!journals/RMSExecutor.addin
+
+# rvt_model_services mail notifier
+notify/email/*
+!notify/email/README.md
+!notify/email/*.py
+
+# rvt_model_services mail notifier
+notify/slack/*
+!notify/slack/README.md
+!notify/slack/*.py
 
 # Installer logs
 pip-log.txt
@@ -73,3 +69,26 @@ ENV/
 
 ### JetBrains
 .idea
+
+### Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*$py.class
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg

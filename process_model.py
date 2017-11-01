@@ -1,160 +1,216 @@
 """ process_model.py
 Usage:
-    process_model.py    [options] 
-                        <command> <project_code> 
-                        <revit_model_path> <revit_model_file_name> 
-                        <revit_version_path> <revit_version> <timeout>
+    process_model.py    <command> <project_code> <full_model_path> [options]
 
 Arguments:
-    command             action to be run on model, like: qc or dwf
-                        currently available: qc, dwf
-    project_code        unique project code consisting of 'projectnumber_projectModelPart' 
-                        like 456_11 , 416_T99 or 377_S
-    model_path          revit model path without file name
-    model_file_name     revit model file name
-    rvt_version_path    revit .exe path of appropriate version like: 
-                        "C:/Program Files/Autodesk/Revit Architecture 2015/Revit.exe"
-    rvt_version         the revit main version number like: 2015
-    timeout             timeout in seconds before revit process gets terminated
+    command                 action to be run on model, like: qc, audit or dwf
+                            currently available: qc, audit, dwf
+    project_code            unique project code consisting of 'projectnumber_projectModelPart'
+                            like 456_11 , 416_T99 or 377_S
+    full_model_path         revit model path including file name
+                            use cfg shortcut if your full model path is already set in config.ini
 
 Options:
-    -h, --help          Show this help screen.
-    --html_path=<html>  path to store html bokeh graphs, default in /commands/qc/*.html
+    -h, --help              Show this help screen.
+    --html_path=<html>      path to store html bokeh graphs, default in /commands/qc/*.html
+    --write_warn_ids        write warning ids from warning command
+    --rvt_path=<rvt>        full path to force specific rvt version other than detected
+    --rvt_ver=<rvtver>      specify revit version and skip checking revit file version
+                            (helpful if opening revit server files)
+    --audit                 activate open model with audit
+    --noworkshared          open non-workshared model
+    --nodetach              do not open workshared model detached
+    --notify                choose to be notified with configured notify module(s)
+    --nofilecheck           skips verifying model path actually exists
+                            (helpful if opening revit server files)
+    --timeout=<seconds>     timeout in seconds before revit process gets terminated
 """
 
 from docopt import docopt
-import os.path as op
 import os
-import re
+import os.path as op
+import pathlib
 import subprocess
-import importlib
 import psutil
+import configparser
 import time
 import logging
 import colorful
-import rps_xml
-import rvt_journal_writer
+import rvt_journal_parser
+import rvt_journal_purger
+import rvt_detector
+import win_utils
 from collections import defaultdict
-from commands.qc.bokeh_qc_graphs import update_graphs
-from commands.warnings.bokeh_warnings_graphs import update_json_and_bokeh
-
-# TODO write model not found to log -> to main log from logging
-# TODO write log header if log not exists with logging module?
-# TODO implement audit option
-# TODO make rvt_pulse available from process model?
+from importlib import machinery
+from notify.email import send_mail
+from notify.slack import send_slack
 
 
-def rvt_journal_run(program, journal_file):
-    return psutil.Popen([program, journal_file], cwd=root_dir,
-                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+def get_paths_dict():
+    """
+    Maps path structure into a dict.
+    :return:dict: path lookup dictionary
+    """
+    path_dict = defaultdict()
+
+    current_dir = op.dirname(op.abspath(__file__))
+    root_dir = current_dir
+    journals_dir = op.join(root_dir, "journals")
+    logs_dir = op.join(root_dir, "logs")
+    warnings_dir = op.join(root_dir, "warnings" + op.sep)
+    commands_dir = op.join(root_dir, "commands")
+    com_warnings_dir = op.join(commands_dir, "warnings")
+    com_qc_dir = op.join(commands_dir, "qc")
+
+    path_dict["root_dir"] = root_dir
+    path_dict["logs_dir"] = logs_dir
+    path_dict["warnings_dir"] = warnings_dir
+    path_dict["journals_dir"] = journals_dir
+    path_dict["commands_dir"] = commands_dir
+    path_dict["com_warnings_dir"] = com_warnings_dir
+    path_dict["com_qc_dir"] = com_qc_dir
+
+    return path_dict
 
 
-def get_rvt_file_version(rvt_file):
-    with open(rvt_file, "rb") as rvt:
-        for i, line in enumerate(rvt.readlines()):
-            # print("--------length of line {}:{}".format(i, len(line)))
-            if len(line) < 200:
-                dec_line = line.decode("utf-16be", "ignore")
-                # print(dec_line)
-                if dec_line.startswith("Revit Build:"):
-                    rvt_build_line = dec_line
-            if i == 30:
-                break
-    # print("{}\nfound rvt build:\n{}".format(rvt_file, rvt_build_line))
-    pattern = re.compile(r"\d{4}")
-    rvt_file_version = re.search(pattern, rvt_build_line.split(":")[1])[0]
-    print("found rvt version: {}".format(rvt_version))
-    return rvt_file_version
+def check_cfg_path(prj_number, cfg_str_or_path, cfg_path):
+    config = configparser.ConfigParser()
+    ini_file = op.join(cfg_path, "config.ini")
+    if cfg_str_or_path == "cfg":
+        if not op.exists(cfg_str_or_path):
+            if op.exists(ini_file):
+                config.read(ini_file)
+                if prj_number in config:
+                    config_path = config[prj_number]["path"]
+                    return config_path
+
+    return cfg_str_or_path
 
 
-def command_detection(search_command, commands_dir, rvt_ver, root_dir, project_code):
-    com_dict = defaultdict()
+def exit_with_log(message):
+    """
+    Ends the whole script with a warning.
+    :param message:
+    :return:
+    """
+    logging.warning(f"{project_code};{current_proc_hash};1;;{message}")
+    exit()
+
+
+def get_jrn_and_post_process(search_command, commands_dir):
+    """
+    Searches command paths for register dict in __init__.py in command roots to
+    prepare appropriate command strings to be inserted into the journal file
+    :param search_command: command name to look up
+    :param commands_dir: commands directory
+    :return: command module, post process dict
+    """
     found_dir = False
-    for directory in os.scandir("commands"):
+    module_rjm = None
+    post_proc_dict = defaultdict()
+
+    for directory in os.scandir(commands_dir):
         command_name = directory.name
         # print(command_name)
         if search_command == command_name:
             found_dir = True
-            # print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
+            print(f" found appropriate command directory {op.join(commands_dir, command_name)}")
             if op.exists(f"{commands_dir}/{command_name}/__init__.py"):
-                mod = importlib.machinery.SourceFileLoader(command_name,
-                                                           "commands/{0}/__init__.py".format(command_name)).load_module()
+                mod = machinery.SourceFileLoader(command_name, op.join(commands_dir,
+                                                                       command_name,
+                                                                       "__init__.py")).load_module()
             else:
-                print(colorful.bold_red(f" appropriate __init__.py in command directory not found - aborting."))
-                exit()
+                exit_with_log('__init__.py in command directory not found')
+
             if "register" in dir(mod):
                 if mod.register["name"] == command_name:
                     # print("command_name found!")
-                    if "get_rps_button" in mod.register:
-                        # print("needs rps button")
-                        button_name = mod.register["get_rps_button"]
-                        rps_button = rps_xml.get_rps_button(rps_xml.find_xml_command(rvt_ver, ""), button_name)
-                        com_dict[command_name] = rps_button
-                    if "rvt_journal_writer" in mod.register:
-                        # print("needs rvt_journal_writer")
-                        if mod.register["rvt_journal_writer"] == "warnings_export_command":
-                            warnings_command_dir = op.join(root_dir, "warnings" + op.sep)
-                            warn_cmd = rvt_journal_writer.warnings_export_command(rvt_journal_writer.
-                                                                                  export_warnings_template,
-                                                                                  warnings_command_dir,
-                                                                                  project_code,
-                                                                                  ),
-                            com_dict[command_name] = warn_cmd[0]
+                    if "rjm" in mod.register:
+                        module_rjm = mod.register["rjm"]
+                    if "post_process" in mod.register:
+                        external_args = []
+                        for arg in mod.register["post_process"]["args"]:
+                            external_args.append(globals().get(arg))
+                        post_proc_dict["func"] = mod.register["post_process"]["func"]
+                        post_proc_dict["args"] = external_args
+
     if not found_dir:
         print(colorful.bold_red(f" appropriate command directory for '{search_command}' not found - aborting."))
-        exit()
-    return com_dict
+        exit_with_log('command directory not found')
+
+    return module_rjm, post_proc_dict
 
 
-print(colorful.bold_blue("+process model job control started"))
+def get_rvt_proc_journal(process, jrn_file_path):
+    open_files = process.open_files()
+    for proc_file in open_files:
+        file_name = op.basename(proc_file.path)
+        if file_name.startswith("journal"):
+            return proc_file.path
+
+    # if nothing found using the process.open_files
+    # dig deeper and get nasty
+    for proc_res in win_utils.proc_open_files(process):
+        res_name = op.basename(proc_res)
+        if res_name.startswith("journal") and res_name.endswith("txt"):
+            return op.join(jrn_file_path, res_name)
+
+
+paths = get_paths_dict()
+
 args = docopt(__doc__)
-
 command = args["<command>"]
 project_code = args["<project_code>"]
-model_path = args["<revit_model_path>"]
-model_file_name = args["<revit_model_file_name>"]
-rvt_version_path = args["<revit_version_path>"]
-rvt_version = args["<revit_version>"]
-timeout = int(args["<timeout>"])
+full_model_path = args["<full_model_path>"]
+full_model_path = check_cfg_path(project_code, full_model_path, paths["root_dir"])
+model_path = op.dirname(full_model_path)
+model_file_name = op.basename(full_model_path)
+timeout = args["--timeout"]
 html_path = args["--html_path"]
+write_warn_ids = args["--write_warn_ids"]
+rvt_override_path = args["--rvt_path"]
+rvt_override_version = args["--rvt_ver"]
+notify = args["--notify"]
+disable_filecheck = args["--nofilecheck"]
+disable_detach = args["--nodetach"]
+disable_ws = args["--noworkshared"]
+audit = args["--audit"]
 
-semicolon_concat_args = ";".join([f"{k}={v}" for k, v in args.items()])
 comma_concat_args = ",".join([f"{k}={v}" for k, v in args.items()])
 
-root_dir = op.dirname(op.abspath(__file__))
-log_dir = op.join(root_dir, "logs")
-warnings_dir = op.join(root_dir, "warnings" + op.sep)
-journals_dir = op.join(root_dir, "journals")
-commands_dir = op.join(root_dir, "commands")
-qc_dir = op.join(commands_dir, "qc")
-warn_dir = op.join(commands_dir, "warnings")
+print(colorful.bold_blue(f"+process model job control started with command: {command}"))
+print(colorful.bold_orange(f"-detected following root path path:"))
+print(f" {paths['root_dir']}")
 
-print(colorful.bold_orange('-detected following path structure:'))
-print(f' ROOT_DIR:     {root_dir}')
-print(f' LOG_DIR:      {log_dir}')
-print(f' WARNINGS_DIR: {warnings_dir}')
-print(f' JOURNALS_DIR: {journals_dir}')
-print(f' COMMANDS_DIR: {commands_dir}')
+journal_file_path = op.join(paths["journals_dir"], project_code + ".txt")
+model_exists = op.exists(full_model_path)
 
-rvt_model_path = model_path + model_file_name
-journal_file_path = op.join(journals_dir, project_code + ".txt")
-model_exists = op.exists(rvt_model_path)
+if timeout:
+    timeout = int(timeout)
+else:
+    timeout = 60
 
 if not html_path:
     if command == "qc":
-        html_path = qc_dir
+        html_path = paths["com_qc_dir"]
     elif command == "warnings":
-        html_path = warn_dir
+        html_path = paths["com_warnings_dir"]
 elif not os.path.exists(html_path):
     if command == "qc":
-        html_path = qc_dir
-        print(f"your specified html path was not found - html graph will be exported to {qc_dir} instead")
+        html_path = paths["com_qc_dir"]
+        print(f"your specified html path was not found - will export html graph to {paths['com_qc_dir']} instead")
     elif command == "warnings":
-        html_path = warn_dir
-        print(f"your specified html path was not found - html graph will be exported to {warn_dir} instead")
+        html_path = paths["com_warnings_dir"]
+        print(f"your specified html path was not found - will export html graph to {paths['com_warnings_dir']} instead")
+if write_warn_ids:
+    warn_ids_path = op.normpath(op.join(model_path, "RVT_fixme"))
+    pathlib.Path(warn_ids_path).mkdir(exist_ok=True)
+    print(warn_ids_path)
+else:
+    warn_ids_path = ""
 
-job_logging = op.join(log_dir, "job_logging.csv")
-header_logging = "time_stamp;level;project;process_hash;error_code;args\n"
+job_logging = op.join(paths["logs_dir"], "job_logging.csv")
+header_logging = "time_stamp;level;project;process_hash;error_code;args;comments\n"
 if not op.exists(job_logging):
     with open(job_logging, "w") as logging_file:
         logging_file.write(header_logging)
@@ -173,53 +229,54 @@ print(f" current process hash: {colorful.cyan(current_proc_hash)}")
 logging.info(f"{project_code};{current_proc_hash};;{comma_concat_args};{'task_started'}")
 
 os.environ["RVT_QC_PRJ"] = project_code
-os.environ["RVT_QC_PATH"] = rvt_model_path
-os.environ["RVT_LOG_PATH"] = log_dir
+os.environ["RVT_QC_PATH"] = full_model_path
+os.environ["RVT_LOG_PATH"] = paths["logs_dir"]
 
-cmd_dict = command_detection(command, commands_dir, rvt_version, root_dir, project_code)
-print(cmd_dict)
+if not rvt_override_version:
+    rvt_model_version = rvt_detector.get_rvt_file_version(full_model_path)
+else:
+    rvt_model_version = rvt_override_version
 
-if model_exists:
+if not rvt_override_path:
+    rvt_install_path = rvt_detector.installed_rvt_detection().get(rvt_model_version)
+    if not rvt_install_path:
+        print(f"no installed rvt versions for {rvt_model_version} detected - please use '--rvt_path' to specify path.")
+        logging.warning(f"{project_code};{current_proc_hash};1;;{'no rvt versions for {rvt_model_version} detected'}")
+        exit()
+else:
+    rvt_install_path = rvt_override_path
 
-    if command == "audit":
-        journal_template = rvt_journal_writer.audit_detach_template
-    else:
-        journal_template = rvt_journal_writer.detach_rps_template
+mod_rjm, post_proc = get_jrn_and_post_process(command, paths["commands_dir"])
 
-    journal = rvt_journal_writer.write_journal(journal_file_path,
-                                               journal_template,
-                                               model_path,
-                                               model_file_name,
-                                               cmd_dict[command],
-                                               )
+if disable_filecheck or model_exists:
+    mod_rjm(project_code, full_model_path, journal_file_path, paths["commands_dir"], paths["logs_dir"])
 
-    addin_file_path = op.join(journals_dir, "RevitPythonShell.addin")
-    rps_addin = rvt_journal_writer.write_addin(addin_file_path,
-                                               rvt_journal_writer.rps_addin_template,
-                                               rvt_version,
-                                               )
-
-    run_proc = rvt_journal_run(rvt_version_path, journal_file_path)
+    run_proc = psutil.Popen([rvt_install_path, journal_file_path],
+                            cwd=paths["root_dir"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     run_proc_id = run_proc.pid
     run_proc_name = run_proc.name()
 
-    print(f" initiating process id: {run_proc_id} - {run_proc_name}")
+    # let's wait half a second for rvt process to fire up
+    time.sleep(0.5)
 
-    # let's wait a second for rvt process to fire up
-    time.sleep(1)
-
-    child_proc = run_proc.children()[0]
-    child_pid = run_proc.children()[0].pid
-    if child_proc.name() == "Revit.exe":
-        proc_name_colored = colorful.bold_green(child_proc.name())
+    if run_proc.name() == "Revit.exe":
+        proc_name_colored = colorful.bold_green(run_proc_name)
     else:
-        proc_name_colored = colorful.bold_red(child_proc.name())
+        proc_name_colored = colorful.bold_red(run_proc_name)
 
-    print(f" number of child processes: {len(run_proc.children())}")
-    print(f" first child process: {child_pid} - {proc_name_colored}")
-    print(colorful.bold_orange("-countdown:"))
-    print(f" timeout until termination of process: {child_pid} - {proc_name_colored}:")
+    print(f" process info: {run_proc_id} - {proc_name_colored}")
 
+    print(colorful.bold_orange("-detected revit:"))
+    print(f" version:{rvt_model_version} at path: {rvt_install_path}")
+
+    print(colorful.bold_orange("-process termination countdown:"))
+    # print(f" timeout until termination of process: {run_proc_id} - {proc_name_colored}:")
+
+    log_journal = get_rvt_proc_journal(run_proc, paths["journals_dir"])
+    return_code = None
+    return_logging = logging.info
+
+    # the main timeout loop
     for sec in range(timeout):
         time.sleep(1)
         print(f" {str(timeout-sec).zfill(4)} seconds", end="\r")
@@ -227,26 +284,47 @@ if model_exists:
 
         if poll == 0:
             print(colorful.bold_green(f" {poll} - revit finished!"))
-            logging.info(f"{project_code};{current_proc_hash};0")
-
-            if command == "qc":
-                update_graphs(project_code, html_path)
+            return_code = "0"
+            return_logging = logging.info
             break
 
         elif timeout-sec-1 == 0:
             print("\n")
             print(colorful.bold_red(" timeout!!"))
             if not poll:
-                print(colorful.bold_red(f" kill child process now: {child_pid}"))
-                child_proc.kill()
-                if command != "warnings":
-                    logging.warning(f"{project_code};{current_proc_hash};1")
+                print(colorful.bold_red(f" kill process now: {run_proc_id}"))
+                run_proc.kill()
+                return_code = "1"
+                return_logging = logging.warning
 
-    if command == "warnings":
-        update_json_and_bokeh(project_code, html_path)
-        logging.info(f"{project_code};{current_proc_hash};0")
+    # post loop processing, naively parsing journal files
+    print(colorful.bold_orange("-post process:"))
+    print(f" process open journal for post process parsing:\n {log_journal}")
+    log_journal_result = rvt_journal_parser.read_journal(log_journal)
+    log_journal_result = ",".join([f"{k}: {v}" for k, v in log_journal_result.items()])
+    if log_journal_result:
+        print(f" detected: {log_journal_result}")
+        if "corrupt" in log_journal_result:
+            return_logging = logging.critical
+            # run all notify modules
+            if notify:
+                notify_modules = [send_mail, send_slack]
+                for notify_function in notify_modules:
+                    notify_function.notify(project_code, full_model_path, log_journal_result)
+
+    # getting post process funcs and args from command module for updating graphs and custom functionality
+    if post_proc:
+        post_proc["func"](*post_proc["args"])
+
+    # write log according to return code
+    logged_journal_excerpt = log_journal_result.strip('\n').strip('\r')
+    return_logging(f"{project_code};{current_proc_hash};{return_code};;{logged_journal_excerpt}")
+
+    # finally journal cleanup
+    rvt_journal_purger.purge(paths["journals_dir"])
 
 else:
     print("model not found")
+    logging.warning(f"{project_code};{current_proc_hash};1;;{'model not found'}")
 
 print(colorful.bold_blue("+process model job control script ended"))

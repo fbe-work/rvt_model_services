@@ -316,9 +316,9 @@ check_modules = ["QC_ScriptRuntime", "timeStamp", "path", "fileName", "scriptFil
                  "q_UnusedStyles", "g_UnplacedGroups", "d_AllDetailItems", "e_AllRooms", "e_0qmRooms",
                  "v_noVTPlanViews", "g_AllModelGroups", "g_AllModelGroupInstances", "g_AllDetailGroups",
                  "g_AllDetailGroupInstances", "q_nonProjectPathDWGLinks", "q_nonProjectPathRasterImages",
-                 "AllLinePatterns", "AllFillPatterns", "AllRasterImages", "AllLineStyles", "AllLinksImports",
-                 "AllConstraints", "UsedLineStyles", "AllGrids", "AllWalls", "AllWindows", "AllDoors",
-                 "AllRevisionClouds", "AllScopeBoxes", "AllRoomsSQM", "AllAreasSQM", "FilledRegionTypes",
+                 "s_AllLinePatterns", "s_AllFillPatterns", "l_AllRasterImages", "s_AllLineStyles", "l_AllLinksImports",
+                 "e_AllConstraints", "s_UsedLineStyles", "e_AllGrids", "e_AllWalls", "e_AllWindows", "e_AllDoors",
+                 "e_AllRevisionClouds", "e_AllScopeBoxes", "m_AllRoomsSQM", "m_AllAreasSQM", "s_FilledRegionTypes",
                  "e_RevisionSets"
                  ]
 
