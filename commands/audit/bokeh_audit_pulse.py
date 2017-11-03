@@ -70,11 +70,15 @@ df_paired = df[df['process_hash'].isin(paired_proc_hashes)].copy()
 df_paired["offset_timestamp"] = df_paired.time_stamp.shift(1)
 df_paired["args"] = df_paired.args.shift(1)
 
-df_paired["duration"] = (df_paired["time_stamp"] - df_paired["offset_timestamp"]) / np.timedelta64(1, "s")
-df_paired["minutes"] = df_paired["time_stamp"].dt.strftime("%Y-%m-%d_%H-%M")
+df_ends = df_paired[(df_paired["error_code"] >= 0.0) &
+                    (df_paired["args"].str.startswith("<command>=audit"))
+                    ].copy()
 
-df_paired["color"] = df_paired["level"].copy()
-df_paired["color"].replace(log_lvl_color, inplace=True)
+df_ends["duration"] = (df_ends["time_stamp"] - df_ends["offset_timestamp"]) / np.timedelta64(1, "s")
+df_ends["minutes"] = df_ends["time_stamp"].dt.strftime("%Y-%m-%d_%H-%M")
+
+df_ends["color"] = df_ends["level"].copy()
+df_ends["color"].replace(log_lvl_color, inplace=True)
 
 # loop over all found projects
 all_projects = df["project"].unique()
@@ -84,10 +88,7 @@ print(all_projects)
 for project in sorted(all_projects):
     print("creating plot for project: {0}".format(project))
 
-    df_project = df_paired[(df_paired["project"] == project) &
-                           (df_paired["error_code"] >= 0.0) &
-                           (df_paired["args"].str.contains("audit"))
-                           ].copy()
+    df_project = df_ends[(df_ends["project"] == project)].copy()
 
     if df_project.empty:
         print("no data yet for project: {0}".format(project))
