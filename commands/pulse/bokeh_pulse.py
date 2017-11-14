@@ -60,13 +60,14 @@ print(html_output_path)
 csv_path = op.join(paths["logs_dir"], "job_logging.csv")
 
 log_lvl_color = {"INFO": "green", "WARNING": "orange", "CRITICAL": "red"}
+drop_columns = ["time_stamp", "level", "offset_timestamp", "args", "error_code"]
 
 pd.set_option('display.width', 1800)
 df = pd.read_csv(csv_path, sep=";", index_col=False)
 df["time_stamp"] = pd.to_datetime(df["time_stamp"], format="%Y-%m-%d")
 
-paired_proc_hashes = df.process_hash[df["process_hash"].duplicated()]
-df_paired = df[df['process_hash'].isin(paired_proc_hashes)].copy()
+df_paired = pd.concat([group for _, group in df.copy().groupby("process_hash") if len(group) > 1])
+
 df_paired["offset_timestamp"] = df_paired.time_stamp.shift(1)
 df_paired["args"] = df_paired.args.shift(1)
 
@@ -79,6 +80,8 @@ df_ends["minutes"] = df_ends["time_stamp"].dt.strftime("%Y-%m-%d_%H-%M")
 
 df_ends["color"] = df_ends["level"].copy()
 df_ends["color"].replace(log_lvl_color, inplace=True)
+
+df_ends.drop(drop_columns, axis=1)
 
 # loop over all found projects
 all_projects = df["project"].unique()
@@ -93,7 +96,7 @@ for project in sorted(all_projects):
     if df_project.empty:
         print("no data yet for project: {0}".format(project))
     else:
-        print(df_project.head(9))
+        print(df_project.head())
 
         # Bar.help.builders[0].glyph.line_alpha = 0.0 # no effect?
         plot = Bar(df_project.tail(60), "minutes", values="duration", color="color", title=project,
