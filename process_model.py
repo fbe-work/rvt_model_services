@@ -12,6 +12,7 @@ Arguments:
 
 Options:
     -h, --help              Show this help screen.
+    --viewer                run revit in viewer mode (-> no transactions)
     --html_path=<html>      path to store html bokeh graphs, default in /commands/qc/*.html
     --write_warn_ids        write warning ids from warning command
     --rvt_path=<rvt>        full path to force specific rvt version other than detected
@@ -175,6 +176,9 @@ disable_filecheck = args["--nofilecheck"]
 disable_detach = args["--nodetach"]
 disable_ws = args["--noworkshared"]
 audit = args["--audit"]
+viewer = args["--viewer"]
+if viewer:
+    viewer = "/viewer"
 
 comma_concat_args = ",".join([f"{k}={v}" for k, v in args.items()])
 
@@ -251,8 +255,9 @@ mod_rjm, post_proc = get_jrn_and_post_process(command, paths["commands_dir"])
 if disable_filecheck or model_exists:
     mod_rjm(project_code, full_model_path, journal_file_path, paths["commands_dir"], paths["logs_dir"])
 
-    run_proc = psutil.Popen([rvt_install_path, journal_file_path],
-                            cwd=paths["root_dir"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc_args = [arg for arg in [rvt_install_path, journal_file_path, viewer] if arg]
+    print(proc_args)
+    run_proc = psutil.Popen(proc_args, cwd=paths["root_dir"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     run_proc_id = run_proc.pid
     run_proc_name = run_proc.name()
 
