@@ -18,8 +18,11 @@ def purge(journal_dir, threshold_age_days=60):
     now = time.time()
     for jrn in os.scandir(journal_dir):
         file_modified = os.stat(jrn).st_mtime
-        if (now - file_modified) // (24 * 3600) >= threshold_age_days:
-            os.remove(jrn)
-            found += 1
+        if jrn.name.endswith(".txt") or jrn.name.endswith(".log"):
+            pass
+        else:
+            if (now - file_modified) // (24 * 3600) >= threshold_age_days:
+                os.remove(jrn)
+                found += 1
     if found > 0:
         print(colorful.bold_orange(f" deleted {found} journals older than: {threshold_age_days} in {journal_dir}"))
