@@ -82,7 +82,7 @@ df_ends["minutes"] = df_ends["time_stamp"].dt.strftime("%Y-%m-%d_%H-%M")
 df_ends["color"] = df_ends["level"].copy()
 df_ends["color"].replace(log_lvl_color, inplace=True)
 
-df_ends.drop(drop_columns, axis=1)
+df_ends = df_ends.drop(drop_columns, axis=1)
 
 # loop over all found projects
 all_projects = df["project"].unique()
