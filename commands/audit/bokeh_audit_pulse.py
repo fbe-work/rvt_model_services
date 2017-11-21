@@ -72,7 +72,8 @@ df_paired["offset_timestamp"] = df_paired.time_stamp.shift(1)
 df_paired["args"] = df_paired.args.shift(1)
 
 df_ends = df_paired[(df_paired["error_code"] >= 0.0) &
-                    (df_paired["args"].str.startswith("<command>=audit"))
+                    (df_paired["args"].str.startswith("<command>=audit")) |
+                    (df_paired["args"].str.startswith("<command>=rps_audit"))
                     ].copy()
 
 df_ends["duration"] = (df_ends["time_stamp"] - df_ends["offset_timestamp"]) / np.timedelta64(1, "s")
