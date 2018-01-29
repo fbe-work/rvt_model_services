@@ -21,6 +21,6 @@ else:
         app.OpenDocumentFile(rvt_path, open_opt)
         # print("{} - {}".format(project, model_path))
     except:
-        # added for models with a specific familiy corruption
+        # added for models with a specific familiy corruption blocking hte check
         print("loading model {} failed".format(rvt_path))
         sys.exit()
