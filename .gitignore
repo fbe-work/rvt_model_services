@@ -11,6 +11,7 @@ commands/*
 
 # ignore config.ini
 config.ini
+jobs.json
 
 # rvt_model_services logs
 logs/*
