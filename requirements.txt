@@ -11,3 +11,4 @@ slackclient==1.0.6
 rvt_detector==0.3.0
 rjm==1.0.0
 tinydb>=3.8.0
+prompt-toolkit>=1.0.15
