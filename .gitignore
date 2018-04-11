@@ -9,9 +9,10 @@ commands/*
 !commands/rps_audit/
 !commands/cookiecutter/
 
-# ignore config.ini
+# ignore configs db and task xml
 config.ini
 jobs.json
+db/*.xml
 
 # rvt_model_services logs
 logs/*
