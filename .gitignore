@@ -12,7 +12,8 @@ commands/*
 # ignore configs db and task xml
 config.ini
 jobs.json
-db/*.xml
+db/xml_import/*.xml
+db/xml_export/*.xml
 
 # rvt_model_services logs
 logs/*
