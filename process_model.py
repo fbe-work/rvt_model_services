@@ -256,7 +256,7 @@ if disable_filecheck or model_exists:
     mod_rjm(project_code, full_model_path, journal_file_path, paths["commands_dir"], paths["logs_dir"])
 
     proc_args = [arg for arg in [rvt_install_path, journal_file_path, viewer] if arg]
-    print(proc_args)
+    # print(proc_args)
     run_proc = psutil.Popen(proc_args, cwd=paths["root_dir"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     run_proc_id = run_proc.pid
     run_proc_name = run_proc.name()
