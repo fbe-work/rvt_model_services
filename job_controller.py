@@ -373,6 +373,7 @@ def export_xmls_from_db():
         for param in xml_prms:
             re_prm = re.compile(param)
             # xml_content = re.sub(re_prm, re.escape(xml_prms[param]), xml_content)
+            # regex = re.escape(regex.encode('string_escape').replace('\\','\\\\'))
             xml_content = re.sub(re_prm, xml_prms[param], xml_content)
 
         with open(op.join(xml_export_dir, f"{job_name}.xml"), "w", encoding="utf-16le") as rms_export:
