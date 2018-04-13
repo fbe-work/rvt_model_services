@@ -358,7 +358,7 @@ def export_xmls_from_db():
     for job in all_db_jobs:
         job_name = job["<project_code>"] + "_" + job["<command>"]
         cmd_str = " ".join(serdes(job=job)[1:])
-        print(cmd_str)
+        # print(cmd_str)
         xml_prms = {r"\{user_id\}": f"{domain}\\\\{user}",
                     r"\{author\}": f"{domain}\\\\{user}",
                     r"\{description\}": f"created: {now_iso}",
@@ -380,7 +380,7 @@ def export_xmls_from_db():
         with open(op.join(xml_export_dir, f"{job_name}.xml"), "w", encoding="utf-16le") as rms_export:
             rms_export.write(xml_content)
 
-        print(f"exported: {job_name}")
+        print(colorful.bold_green(f"exported: {job_name}"))
 
 
 def test_collected():
