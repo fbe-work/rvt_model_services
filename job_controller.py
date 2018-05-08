@@ -339,7 +339,7 @@ def import_xmls_into_db():
             pprint(db_job_dict)
             rms_db.upsert(db_job_dict, (Query()["<project_code>"] == cmd_tokens["args"]['<project_code>']) &
                           (Query()["<command>"] == cmd_tokens["args"]["<command>"]))
-            print("  added to db.")
+            print("  added/updated in db.")
     if not found_rms_task_xml:
         print(colorful.bold_red(f"  could not find rms task xml in: {db_dir}"))
 
