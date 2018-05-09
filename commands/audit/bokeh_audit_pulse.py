@@ -18,6 +18,7 @@ from bokeh.charts import Bar, output_file, save
 from bokeh.layouts import column
 
 # TODO tick label get first date in month from separate column
+# TODO compare time spent/timeout
 
 
 def command_get_paths(verbose=False):
@@ -85,41 +86,38 @@ df_ends["color"].replace(log_lvl_color, inplace=True)
 df_ends = df_ends.drop(drop_columns, axis=1)
 
 # loop over all found projects
-all_projects = df["project"].unique()
 all_plots = []
-print(all_projects)
-
-for project in sorted(all_projects):
+for project, df_project in df_ends.groupby(by="project"):
     print("creating plot for project: {0}".format(project))
-
-    df_project = df_ends[(df_ends["project"] == project)].copy()
 
     if df_project.empty:
         print("no data yet for project: {0}".format(project))
-    else:
-        print(df_project.head())
+        continue
 
-        # Bar.help.builders[0].glyph.line_alpha = 0.0 # no effect?
-        plot = Bar(df_project.tail(60), "minutes", values="duration", color="color", title=project,
-                   background_fill_alpha=0, border_fill_alpha=0, outline_line_alpha=0,
-                   xgrid=False, legend=None, toolbar_location=None,
-                   width=900, height=400
-                   )
+    print(df_project.sort_values(by="minutes").tail())
 
-        # plot styling
-        plot.axis.axis_label = None
-        plot.xaxis.axis_label = None
-        plot.axis.major_tick_line_color = None
-        plot.axis.minor_tick_line_color = None
-        # plot.xaxis[0].ticker.desired_num_ticks = 5
-        # plot.xaxis.major_label_text_alpha = 0
-        plot.xaxis.major_label_orientation = pi / 2
+    # Bar.help.builders[0].glyph.line_alpha = 0.0 # no effect?
+    plot = Bar(df_project.sort_values(by="minutes").tail(60),
+               "minutes", values="duration", color="color", title=project,
+               background_fill_alpha=0, border_fill_alpha=0, outline_line_alpha=0,
+               xgrid=False, legend=None, toolbar_location=None,
+               width=900, height=400
+               )
 
-        for g in plot.renderers:
-            if "GlyphRenderer" in str(g.__repr__):
-                g.glyph.line_alpha = 0
+    # plot styling
+    plot.axis.axis_label = None
+    plot.xaxis.axis_label = None
+    plot.axis.major_tick_line_color = None
+    plot.axis.minor_tick_line_color = None
+    # plot.xaxis[0].ticker.desired_num_ticks = 5
+    # plot.xaxis.major_label_text_alpha = 0
+    plot.xaxis.major_label_orientation = pi / 2
 
-        all_plots.append(plot)
+    for g in plot.renderers:
+        if "GlyphRenderer" in str(g.__repr__):
+            g.glyph.line_alpha = 0
+
+    all_plots.append(plot)
 
 output_file(html_output, title="rvt_audit_pulse", mode="inline")
 save(column(all_plots))
