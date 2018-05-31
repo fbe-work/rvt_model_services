@@ -17,6 +17,7 @@ import colorful
 
 
 # TODO adjust existing job
+# TODO run bokeh graph update scripts
 
 
 def exit():
@@ -357,13 +358,14 @@ def export_xmls_from_db():
 
     for job in all_db_jobs:
         job_name = job["<project_code>"] + "_" + job["<command>"]
+        start_time = now_iso.split("T")[0] + "T" + job[">start_time"]
         cmd_str = " ".join(serdes(job=job)[1:])
         # print(cmd_str)
         xml_prms = {r"\{user_id\}": f"{domain}\\\\{user}",
                     r"\{author\}": f"{domain}\\\\{user}",
                     r"\{description\}": f"created: {now_iso}",
                     r"\{creation_date\}": now_iso,
-                    r"\{start_time\}": now_iso.split(".")[0],
+                    r"\{start_time\}": start_time,
                     r"\{application\}": sys.executable,
                     r"\{args\}": cmd_str,
                     }
