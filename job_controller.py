@@ -54,6 +54,13 @@ def help():
 
 def list_db_jobs():
     """
+    list all rms jobs from db
+    """
+    list_jobs()
+
+
+def list_filtered_db_jobs():
+    """
     list filtered rms jobs from db
     """
     print("  please enter project_code to filter by, return for all")
