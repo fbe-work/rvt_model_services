@@ -278,14 +278,14 @@ if disable_filecheck or model_exists:
     # print(f" timeout until termination of process: {run_proc_id} - {proc_name_colored}:")
 
     log_journal = get_rvt_proc_journal(run_proc, paths["journals_dir"])
-    return_code = None
+    return_code = 9
     return_logging = logging.info
 
     # the main timeout loop
     for sec in range(timeout):
         time.sleep(1)
-        print(f" {str(timeout-sec).zfill(4)} seconds", end="\r")
         poll = run_proc.poll()
+        print(f" {str(timeout-sec).zfill(4)} seconds, proc poll: {poll}", end="\r")
 
         if poll == 0:
             print(colorful.bold_green(f" {poll} - revit finished!"))
