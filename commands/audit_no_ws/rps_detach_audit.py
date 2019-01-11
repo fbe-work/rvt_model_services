@@ -3,8 +3,7 @@ import sys
 import clr
 clr.AddReference("RevitAPI")
 from Autodesk.Revit.DB import OpenOptions, DetachFromCentralOption, FilePath
-from Autodesk.Revit.DB import WorksetConfiguration, WorksetConfigurationOption, WorksetId
-from Autodesk.Revit.DB import WorksharingUtils, ModelPathUtils
+from Autodesk.Revit.DB import WorksetConfiguration, WorksetConfigurationOption
 
 app = __revit__.Application
 
@@ -12,7 +11,6 @@ if "RVT_QC_PRJ" not in os.environ:
     print("no model specified")
 
 else:
-
     project = os.environ["RVT_QC_PRJ"]
     model_path = os.environ["RVT_QC_PATH"]
     rvt_path = FilePath(model_path)
