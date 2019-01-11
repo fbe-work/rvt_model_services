@@ -6,6 +6,7 @@ commands/*
 !commands/pulse/
 !commands/warnings/
 !commands/audit/
+!commands/audit_no_ws/
 !commands/rps_audit/
 !commands/cookiecutter/
 
