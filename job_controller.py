@@ -6,10 +6,10 @@ import os.path as op
 from pprint import pprint
 from datetime import datetime
 from prompt_toolkit import prompt
-from prompt_toolkit.styles import style_from_dict
-from prompt_toolkit.token import Token
+from prompt_toolkit.styles import Style
+from pygments.token import Token
 from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from tinydb import TinyDB, Query
 import subprocess
@@ -171,7 +171,7 @@ def run_db_job_by_id():
     runs a job from database by id
     """
     print("  please enter job_id to run")
-    job_id = prompt("> show_job_by_db_id> ", **sub_prompt_options)
+    job_id = prompt("> run_job_by_db_id> ", **sub_prompt_options)
     if job_id:
         job_id = int(job_id)
         job = rms_db.get(doc_id=job_id)
@@ -414,17 +414,15 @@ implemented = {key: val for key, val in globals().items()
                and key not in hidden}
 completer = WordCompleter([fn for fn in implemented.keys()])
 # print(f"implemented: {implemented}")
-prompt_style = style_from_dict({Token: '#aaaaff'})
+
 prompt_options = dict(history=history,
                       auto_suggest=suggest,
                       completer=completer,
-                      style=prompt_style,
                       )
-sub_prompt_style = style_from_dict({Token: '#aaeeff'})
+
 sub_prompt_options = dict(history=history,
                           auto_suggest=suggest,
                           completer=completer,
-                          style=sub_prompt_style,
                           )
 
 print("welcome to revit model services job controller.")
