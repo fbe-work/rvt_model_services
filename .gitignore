@@ -1,6 +1,7 @@
 # ignore all commands except rvt_model_services built-in commands and cookiecutter template
 commands/*
 !commands/qc/
+!commands/qc_no_ws/
 !commands/dwf/
 !commands/dwg/
 !commands/pulse/
