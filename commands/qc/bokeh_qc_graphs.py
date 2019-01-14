@@ -52,7 +52,7 @@ def graph(_csv, _project_code, graph_topics):
                                     ("count", "@count"),
                                     ]
                           )
-        tools_opt = ["resize", hover, "save", "pan", "wheel_zoom", "reset"]
+        tools_opt = [hover, "save", "pan", "wheel_zoom", "reset"]
         graph_opt = dict(width=900, x_axis_type="datetime",
                          toolbar_location="left", tools=tools_opt, toolbar_sticky=False,
                          background_fill_alpha=0, border_fill_alpha=0)
