@@ -373,17 +373,14 @@ def export_xmls_from_db():
                     r"\{description\}": f"created: {now_iso}",
                     r"\{creation_date\}": now_iso,
                     r"\{start_time\}": start_time,
-                    r"\{application\}": sys.executable,
-                    r"\{args\}": cmd_str,
+                    r"\{application\}": sys.executable.replace("\\", "\\\\"),
+                    r"\{args\}": cmd_str.replace("\\", "\\\\"),
                     }
         with open(op.join(xml_export_dir, "rms_xml_daily_template.xml"), "r", encoding="utf-16le") as xml_template:
             xml_content = xml_template.read()
 
         for param in xml_prms:
             re_prm = re.compile(param)
-            # better treatment for backslashes needed
-            # xml_content = re.sub(re_prm, re.escape(xml_prms[param]), xml_content)
-            # regex = re.escape(regex.encode('string_escape').replace('\\','\\\\'))
             xml_content = re.sub(re_prm, xml_prms[param], xml_content)
 
         with open(op.join(xml_export_dir, f"{job_name}.xml"), "w", encoding="utf-16le") as rms_export:
