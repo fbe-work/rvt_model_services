@@ -14,6 +14,7 @@ commands/*
 # ignore configs db and task xml except xml templates
 config.ini
 jobs.json
+model_hashes.json
 db/xml_import/*.xml
 db/xml_export/*.xml
 !db/xml_export/*_template.xml
