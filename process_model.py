@@ -39,35 +39,16 @@ import time
 import datetime
 import logging
 import colorful as col
-import rvt_journal_parser
-import rvt_journal_purger
 import rvt_detector
-import win_utils
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from importlib import machinery
 from tinydb import TinyDB, Query
-from notify.email import send_mail
-from notify.slack import send_slack
-from notify.req_post import send_post
-
-
-def get_rms_paths():
-    """
-    Maps path structure into a namedtuple.
-    :return:dict: namedtuple paths
-    """
-    root_dir = pathlib.Path(__file__).absolute().parent
-    RMSPaths = namedtuple("RMSPaths", "root logs warnings commands journals com_warnings com_qc hashes_db")
-    path_map = RMSPaths(root=root_dir,
-                        logs=root_dir / "logs",
-                        warnings=root_dir / "warnings",
-                        commands=root_dir / "commands",
-                        journals=root_dir / "journals",
-                        com_warnings=root_dir / "commands" / "warnings",
-                        com_qc=root_dir / "commands" / "qc",
-                        hashes_db=root_dir / "db",
-                        )
-    return path_map
+from .utils import rvt_journal_parser, rvt_journal_purger
+from .utils.win_utils import proc_open_files
+from .utils.rms_paths import get_paths
+from .notify.email import send_mail
+from .notify.slack import send_slack
+from .notify.req_post import send_post
 
 
 def check_cfg_path(prj_number, cfg_str_or_path, cfg_path):
@@ -180,14 +161,14 @@ def get_rvt_proc_journal(process, jrn_file_path):
 
     # if nothing found using the process.open_files
     # dig deeper and get nasty
-    for proc_res in win_utils.proc_open_files(process):
+    for proc_res in proc_open_files(process):
         res_name = pathlib.Path(proc_res).name
         if res_name.startswith("journal") and res_name.endswith("txt"):
             return jrn_file_path / res_name
 
 
 today_int = int(datetime.date.today().strftime("%Y%m%d"))
-rms_paths = get_rms_paths()
+rms_paths = get_paths(__file__)
 
 args = docopt(__doc__)
 command = args["<command>"]
@@ -218,7 +199,7 @@ print(col.bold_orange(f"-detected following root path:"))
 print(f" {rms_paths.root}")
 
 format_json = {"sort_keys": True, "indent": 4, "separators": (',', ': ')}
-hashes_db = TinyDB(rms_paths.hashes_db / "model_hashes.json", **format_json)
+hashes_db = TinyDB(rms_paths.db / "model_hashes.json", **format_json)
 journal_file_path = rms_paths.journals / f"{project_code}.txt"
 model_exists = full_model_path.exists()
 
