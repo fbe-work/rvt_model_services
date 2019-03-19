@@ -123,7 +123,7 @@ def write_bokeh_graph(data_frame, html_output, project_code):
                                 ("count", "@count"),
                                 ]
                       )
-    tools_opt = ["resize", hover, "save", "pan", "wheel_zoom", "reset"]
+    tools_opt = [hover, "save", "pan", "wheel_zoom", "reset"]
     graph_opt = dict(width=900, x_axis_type="datetime",
                      toolbar_location="left", tools=tools_opt, toolbar_sticky=False,
                      background_fill_alpha=0, border_fill_alpha=0,
@@ -223,9 +223,9 @@ def style_plot(plot):
                                                  months=["%d %b %Y"],
                                                  years=["%d %b %Y"]
                                                  )
-    plot.legend.location = "top_left"
-    plot.legend.border_line_alpha = 0
-    plot.legend.background_fill_alpha = 0
+    #plot.legend.location = "top_left"
+    #plot.legend.border_line_alpha = 0
+    #plot.legend.background_fill_alpha = 0
     plot.title.text_font_size = "14pt"
     return plot
 
