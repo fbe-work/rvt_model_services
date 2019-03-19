@@ -14,13 +14,12 @@ def fetch_config(prj_number):
             sender = config[prj_number]["sender"]
             receiver = config[prj_number]["receiver"]
             return server, sender, receiver
-    else:
-        return None, None, None
+    return None, None, None
 
 
 def notify(prj_number, prj_path, journal_excerpt, port=25):
     mail_server, mail_sender, mail_recipients = fetch_config(prj_number)
-    if mail_server:
+    if mail_server and  mail_sender and mail_recipients:
         mail_text = f"warning - rvt model {prj_number} at path {prj_path} is corrupt! \nsee journal: {journal_excerpt}"
         msg = MIMEText(mail_text)
         msg['From'] = mail_sender
