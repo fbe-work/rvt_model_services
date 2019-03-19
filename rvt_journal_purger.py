@@ -4,7 +4,7 @@ that are older than certain threshold.
 """
 import os
 import time
-import colorful
+import colorful as col
 
 
 def purge(journal_dir, threshold_age_days=60):
@@ -24,4 +24,4 @@ def purge(journal_dir, threshold_age_days=60):
                 found += 1
 
     if found > 0:
-        print(colorful.bold_orange(f" deleted {found} journals older than: {threshold_age_days} in {journal_dir}"))
+        print(col.bold_orange(f" deleted {found} journals older than: {threshold_age_days} in {journal_dir}"))
