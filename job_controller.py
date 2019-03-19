@@ -3,6 +3,7 @@ import sys
 import re
 import os
 import os.path as op
+import pathlib
 from pprint import pprint
 from datetime import datetime
 from prompt_toolkit import prompt
@@ -10,13 +11,14 @@ from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from tinydb import TinyDB, Query
+from utils.rms_paths import get_paths
+from utils.bokeh_jobs_viz import update_graph
 import subprocess
 import colorful
 
 
 # TODO adjust existing job
 # TODO run_job_by_id with default preset
-# TODO run bokeh graph update scripts
 # TODO show job details directly by id
 
 
@@ -190,8 +192,8 @@ def run_db_job_by_id(preset=None):
 def check_model_path(job_id):
     job_id = int(job_id)
     job = rms_db.get(doc_id=job_id)
-    model_path = job["<full_model_path>"]
-    if op.exists(model_path):
+    model_path = pathlib.Path(job["<full_model_path>"])
+    if model_path.exists():
         print(colorful.bold_green(f"  model found at: {model_path}"))
         return True
     else:
@@ -246,6 +248,13 @@ def show_db_job_by_id():
         print("  no job with this id found")
 
 
+def write_jobs_graph():
+    """
+    writes a html graph of jobs from db
+    """
+    update_graph(rms_db, rms_paths.db / "rms_jobs_timing.html")
+
+
 def collect_options(collector=list(), prompt_text='>> '):
     # print(f"called collect_options with: {collector}")
     collected = prompt(prompt_text, **sub_prompt_options)
@@ -277,8 +286,7 @@ def serdes(job=None, cmd_tokens=None):
     serialize/deserialize job/commands hidden
     """
     if job:
-        command = [sys.executable,
-                   op.join(root_dir, "process_model.py")]
+        command = [sys.executable, str(rms_paths.root / "process_model.py")]
         command.extend([job["<command>"],
                         job["<project_code>"],
                         job["<full_model_path>"],
@@ -323,12 +331,12 @@ def import_xmls_into_db():
     import all xml rms tasks from db/xml_import directory into db
     """
     found_rms_task_xml = False
-    for entry in os.scandir(xml_import_dir):
+    for entry in os.scandir(rms_paths.xml_imp):
         if not entry.is_file():
             continue
         if not entry.name.endswith(".xml"):
             continue
-        with open(op.join(xml_import_dir, entry.name), "r", encoding="utf-16le") as xml_task:
+        with open(rms_paths.xml_imp / entry.name, "r", encoding="utf-16le") as xml_task:
             xml_content = xml_task.read()
         re_process_model = re.compile("process_model.py")
         is_rms_task = re.findall(re_process_model, xml_content)
@@ -354,7 +362,7 @@ def import_xmls_into_db():
                           (Query()["<command>"] == cmd_tokens["args"]["<command>"]))
             print("  added/updated in db.")
     if not found_rms_task_xml:
-        print(colorful.bold_red(f"  could not find rms task xml in: {db_dir}"))
+        print(colorful.bold_red(f"  could not find rms task xml in: {rms_paths.db}"))
 
 
 def export_xmls_from_db():
@@ -381,14 +389,14 @@ def export_xmls_from_db():
                     r"\{application\}": sys.executable.replace("\\", "\\\\"),
                     r"\{args\}": cmd_str.replace("\\", "\\\\"),
                     }
-        with open(op.join(xml_export_dir, "rms_xml_daily_template.xml"), "r", encoding="utf-16le") as xml_template:
+        with open(rms_paths.xml_exp / "rms_xml_daily_template.xml", "r", encoding="utf-16le") as xml_template:
             xml_content = xml_template.read()
 
         for param in xml_prms:
             re_prm = re.compile(param)
             xml_content = re.sub(re_prm, xml_prms[param], xml_content)
 
-        with open(op.join(xml_export_dir, f"{job_name}.xml"), "w", encoding="utf-16le") as rms_export:
+        with open(rms_paths.xml_exp / f"{job_name}.xml", "w", encoding="utf-16le") as rms_export:
             rms_export.write(xml_content)
 
         print(colorful.bold_green(f"exported: {job_name}"))
@@ -400,17 +408,16 @@ def test_collected():
     print(f" we got: {coll}")
 
 
-root_dir = op.dirname(op.abspath(__file__))
-db_dir = op.join(root_dir, "db")
-xml_import_dir = op.join(db_dir, "xml_import")
-xml_export_dir = op.join(db_dir, "xml_export")
+rms_paths = get_paths(__file__)
+
 format_json = {"sort_keys": True, "indent": 4, "separators": (',', ': ')}
-rms_db = TinyDB(op.join(db_dir, "jobs.json"), **format_json)
+rms_db = TinyDB(rms_paths.db / "jobs.json", **format_json)
 history = InMemoryHistory()
 suggest = AutoSuggestFromHistory()
 hidden = ["prompt", "pprint", "not_found", "collect_options",
           "collect_arguments", "serdes", "list_jobs",
           "check_model_path", "test_collected", "style_from_dict",
+          "get_paths", "update_graph"
           ]
 implemented = {key: val for key, val in globals().items()
                if isinstance(val, types.FunctionType)
