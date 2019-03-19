@@ -6,8 +6,6 @@ import os.path as op
 from pprint import pprint
 from datetime import datetime
 from prompt_toolkit import prompt
-from prompt_toolkit.styles import Style
-from pygments.token import Token
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
@@ -17,7 +15,9 @@ import colorful
 
 
 # TODO adjust existing job
+# TODO run_job_by_id with default preset
 # TODO run bokeh graph update scripts
+# TODO show job details directly by id
 
 
 def exit():
@@ -87,7 +87,7 @@ def list_jobs(filter_prj=None, filter_cmd=None, by_id=None):
     if db_results:
         print(colorful.cyan("id".rjust(4)),
               colorful.cyan("project_code".ljust(12)),
-              colorful.cyan("command".ljust(12)),
+              colorful.cyan("command".ljust(14)),
               colorful.cyan("start_time".rjust(12)),
               colorful.cyan("timeout".rjust(8)),
               )
@@ -98,7 +98,7 @@ def list_jobs(filter_prj=None, filter_cmd=None, by_id=None):
                 job_timeout = 60
             print(str(job_id).rjust(4),
                   job["<project_code>"].ljust(12),
-                  job["<command>"].ljust(12),
+                  job["<command>"].ljust(14),
                   job[">start_time"].rjust(12),
                   str(job_timeout).rjust(8),
                   )
@@ -128,7 +128,7 @@ def add_job_to_db():
                                    (Query()["<command>"] == args['<command>']))
 
 
-def remove_db_job_by_id():
+def remove_db_job_by_id(preset=None):
     """
     removes rms job from db by id
     """
@@ -166,20 +166,25 @@ def run_db_job():
         print("  no job with this id found")
 
 
-def run_db_job_by_id():
+def run_db_job_by_id(preset=None):
     """
     runs a job from database by id
     """
     print("  please enter job_id to run")
-    job_id = prompt("> run_job_by_db_id> ", **sub_prompt_options)
+    if preset:
+        print(preset)
+        return
+    else:
+        job_id = prompt("> run_job_by_db_id> ", **sub_prompt_options)
     if job_id:
         job_id = int(job_id)
         job = rms_db.get(doc_id=job_id)
-        cmd_tokens = serdes(job=job)
-        cmd_str = " ".join(cmd_tokens)
-        if check_model_path(job_id):
-            print(cmd_str)
-            subprocess.Popen(cmd_str)
+        if job:
+            cmd_tokens = serdes(job=job)
+            cmd_str = " ".join(cmd_tokens)
+            if check_model_path(job_id):
+                print(cmd_str)
+                subprocess.Popen(cmd_str)
 
 
 def check_model_path(job_id):
@@ -399,7 +404,8 @@ root_dir = op.dirname(op.abspath(__file__))
 db_dir = op.join(root_dir, "db")
 xml_import_dir = op.join(db_dir, "xml_import")
 xml_export_dir = op.join(db_dir, "xml_export")
-rms_db = TinyDB(op.join(db_dir, "jobs.json"))
+format_json = {"sort_keys":True, "indent":4, "separators":(',', ': ')}
+rms_db = TinyDB(op.join(db_dir, "jobs.json"), **format_json)
 history = InMemoryHistory()
 suggest = AutoSuggestFromHistory()
 hidden = ["prompt", "pprint", "not_found", "collect_options",
@@ -410,7 +416,6 @@ implemented = {key: val for key, val in globals().items()
                if isinstance(val, types.FunctionType)
                and key not in hidden}
 completer = WordCompleter([fn for fn in implemented.keys()])
-# print(f"implemented: {implemented}")
 
 prompt_options = dict(history=history,
                       auto_suggest=suggest,
