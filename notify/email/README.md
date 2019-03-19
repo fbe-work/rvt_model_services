@@ -6,13 +6,13 @@ the config is ignored so no information is leaked to repo.<br>
 it's content should look like this:<br>
 
 ```
-[project_name1]<br>
-server = your companys mail server<br>
-sender = email address of sender<br>
+[project_name1]
+server = your companys mail server
+sender = email address of sender
 receiver = email address of receiver1, email address of receiver2 ...
  
-[project_name2]<br>
-server = your companys mail server<br>
-sender = email address of sender<br>
+[project_name2]
+server = your companys mail server
+sender = email address of sender
 receiver = email address of receiver1, email address of receiver3 ...
 ```
