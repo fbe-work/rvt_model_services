@@ -43,12 +43,12 @@ import rvt_detector
 from collections import defaultdict
 from importlib import machinery
 from tinydb import TinyDB, Query
-from .utils import rvt_journal_parser, rvt_journal_purger
-from .utils.win_utils import proc_open_files
-from .utils.rms_paths import get_paths
-from .notify.email import send_mail
-from .notify.slack import send_slack
-from .notify.req_post import send_post
+from utils import rvt_journal_parser, rvt_journal_purger
+from utils.win_utils import proc_open_files
+from utils.rms_paths import get_paths
+from notify.email import send_mail
+from notify.slack import send_slack
+from notify.req_post import send_post
 
 
 def check_cfg_path(prj_number, cfg_str_or_path, cfg_path):
