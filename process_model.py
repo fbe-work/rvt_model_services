@@ -261,11 +261,11 @@ logging.getLogger("bokeh").setLevel(logging.CRITICAL)
 print(col.bold_orange('-detected following process structure:'))
 current_proc_hash = hash(psutil.Process())
 print(f" current process hash: {col.cyan(current_proc_hash)}")
-model_hash = get_model_hash(full_model_path)
 
 logging.info(f"{project_code};{current_proc_hash};;{comma_concat_args};{'task_started'}")
 
 if skip_hash_unchanged:
+    model_hash = get_model_hash(full_model_path)
     print(f" model hash:           {col.cyan(model_hash)}")
     hash_unchanged = check_hash_unchanged(hashes_db, full_model_path, model_hash, today_int)
     if hash_unchanged:
