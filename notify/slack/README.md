@@ -6,11 +6,11 @@ the config is ignored so no information is leaked to repo.<br>
 it's content should look like this:<br>
 
 ```
-[project_name1]<br>
-token = your company's slack token<br>
-channel = slack channel<br>
+[project_name1]
+token = your company's slack token
+channel = slack channel
  
-[project_name2]<br>
-token = your company's slack token<br>
-channel = slack channel<br>
+[project_name2]
+token = your company's slack token
+channel = slack channel
 ```
