@@ -1,9 +1,5 @@
-from tinydb import TinyDB
 import pandas as pd
-from datetime import datetime
-import calendar
 from bokeh.plotting import figure, save, output_file
-from bokeh.models import BoxAnnotation
 from bokeh.palettes import viridis
 from bokeh.models import ColumnDataSource, DatetimeTickFormatter, HoverTool
 
@@ -11,7 +7,6 @@ from bokeh.models import ColumnDataSource, DatetimeTickFormatter, HoverTool
 
 
 def style_plot(plot):
-    # axis styling, legend styling
     plot.outline_line_color = None
     plot.axis.axis_label = None
     plot.axis.axis_line_color = None
