@@ -2,7 +2,6 @@ import types
 import sys
 import re
 import os
-import os.path as op
 import pathlib
 from pprint import pprint
 from datetime import datetime
@@ -19,7 +18,6 @@ import colorful
 
 # TODO adjust existing job
 # TODO run_job_by_id with default preset
-# TODO show job details directly by id
 
 
 def exit():
@@ -37,9 +35,10 @@ def not_found(echo=None):
     if echo:
         if echo.startswith("#"):
             return
-        print(f"  sorry this function is not implemented: {echo}")
-    else:
-        return
+        elif echo.isdigit():
+            show_db_job_by_id(int(echo))
+            return
+    print(f"  sorry this function is not implemented: {echo}")
 
 
 def help():
@@ -230,13 +229,16 @@ def show_db_job():
     return
 
 
-def show_db_job_by_id():
+def show_db_job_by_id(preset=None):
     """
     show config details of rms job from db by id
     """
-    print("  please enter job_id to show details")
-    job_id = prompt("> show_job_by_db_id> ", **sub_prompt_options)
-    job_id = int(job_id)
+    if not preset:
+        print("  please enter job_id to show details")
+        job_id = prompt("> show_job_by_db_id> ", **sub_prompt_options)
+        job_id = int(job_id)
+    else:
+        job_id = int(preset)
     job = rms_db.get(doc_id=job_id)
     if job:
         list_jobs(by_id=job_id)
