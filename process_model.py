@@ -84,17 +84,17 @@ def get_model_hash(rvt_model_path):
 
 
 def check_hash_unchanged(hash_db, rvt_model_path, model_hash, date):
-    model_info = {"<full_model_path>": rvt_model_path,
+    model_info = {"<full_model_path>": str(rvt_model_path),
                   ">last_hash": model_hash,
                   ">last_hash_date": date,
                   }
-    unchanged = hash_db.search((Query()["<full_model_path>"] == rvt_model_path) &
+    unchanged = hash_db.search((Query()["<full_model_path>"] == str(rvt_model_path)) &
                                (Query()[">last_hash"] == model_hash)
                                )
     if unchanged:
         return True
     else:
-        hash_db.upsert(model_info, Query()["<full_model_path>"] == rvt_model_path
+        hash_db.upsert(model_info, Query()["<full_model_path>"] == str(rvt_model_path)
                        )
 
 
