@@ -18,5 +18,5 @@ def fetch_config(prj_number):
 def notify(prj_number, prj_path, journal_excerpt):
     url, ssl_verify = fetch_config(prj_number)
     verify_map = {"true": True, "false": False}
-    text = f"warning - rvt model: {prj_number}\nat path: {prj_path}\n is corrupt! see journal:\n{journal_excerpt}"
+    text = f"warning - rvt model: {prj_number}at path: {prj_path}\n is corrupt! see journal line:{journal_excerpt}"
     requests.post(url, data={"text": text}, verify=verify_map[ssl_verify])
