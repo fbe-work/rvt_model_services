@@ -43,6 +43,7 @@ else:
     relinquish_opt = RelinquishOptions(True)
     sync_opt.SetRelinquishOptions(relinquish_opt)
     sync_opt.SaveLocalAfter = True
+    # sync_opt.Compact = True
     sync_opt.Comment = "syncing"
 
     trans_opt = TransactWithCentralOptions()
@@ -91,3 +92,10 @@ if log_dir:
     log_file = os.path.join(log_dir, project + "_benchmark_" + ".csv")
     with open(log_file, "a") as csv_file:
         csv_file.write(log_info + "\n")
+
+if log_dir:
+    log_file = os.path.join(log_dir, project + "_benchmark_single_iteration_timing_" + ".csv")
+    with open(log_file, "a") as csv_file:
+        for iternum, timing in timing_map.items():
+            csv_file.write("{};{};{}\n".format(time_now, iternum, timing))
+
