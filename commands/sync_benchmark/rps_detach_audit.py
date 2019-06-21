@@ -54,16 +54,16 @@ else:
 
     for i in range(iterations):
         start = datetime.now()
-
         print("  start: {}".format(start))
+
         doc = app.OpenDocumentFile(rvt_path, open_opt)
         print("  openend: {}".format(str(datetime.now())))
         doc.SynchronizeWithCentral(trans_opt, sync_opt)
         print("  synced: {}".format(str(datetime.now())))
         doc.Close()
-        print("  closed: {}".format(str(datetime.now())))
 
         end = datetime.now()
+        print("  closed: {}".format(str(end)))
 
         timing_result = end - start
         timing_map[i] = timing_result.total_seconds()
