@@ -56,21 +56,21 @@ else:
 
     for i in range(iterations):
         start = datetime.now()
-        print("  start: {}".format(start))
+        print("__{:2}: start: {}".format(i, start))
 
         doc = app.OpenDocumentFile(rvt_path, open_opt)
-        print("  openend: {}".format(str(datetime.now())))
+        print("  {:2}: openend: {}".format(i, str(datetime.now())))
         doc.SynchronizeWithCentral(trans_opt, sync_opt)
-        print("  synced: {}".format(str(datetime.now())))
+        print("  {:2}: synced: {}".format(i, str(datetime.now())))
         doc.Close()
 
         end = datetime.now()
-        print("  closed: {}".format(str(end)))
+        print("  {:2}: closed: {}".format(i, str(end)))
 
         timing_result = end - start
         timing_map[i] = timing_result.total_seconds()
 
-        print("  single run duration: {}".format(str(timing_result.total_seconds())))
+        print("  {:2}: single run duration: {}".format(i, str(timing_result.total_seconds())))
 
 
 print(35*"=")
