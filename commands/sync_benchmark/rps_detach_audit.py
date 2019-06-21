@@ -98,12 +98,12 @@ log_info += "average seconds:{};".format(average)
 log_info += "iterations:{};".format(iterations)
 
 if log_dir:
-    log_file = os.path.join(log_dir, machine_name, project + "_benchmark_" + benchmark_topic + ".csv")
+    log_file = os.path.join(log_dir, machine_name + "_" + project + "_benchmark_" + benchmark_topic + ".csv")
     with open(log_file, "a") as csv_file:
         csv_file.write(log_info + "\n")
 
 if log_dir:
-    log_file = os.path.join(log_dir, machine_name, project + "_benchmark_single_iteration_timing_" + benchmark_topic + ".csv")
+    log_file = os.path.join(log_dir, machine_name + "_" + project + "_benchmark_single_iteration_timing_" + benchmark_topic + ".csv")
     with open(log_file, "a") as csv_file:
         for iternum, timing in timing_map.items():
             csv_file.write("{};{};{}\n".format(time_now, iternum, timing))
