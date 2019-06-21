@@ -17,7 +17,7 @@ import colorful
 
 
 # TODO adjust existing job
-# TODO run_job_by_id with default preset
+# TODO functions with preset arg
 
 
 def exit():
@@ -412,8 +412,8 @@ def test_collected():
 
 rms_paths = get_paths(__file__)
 
-format_json = {"sort_keys": True, "indent": 4, "separators": (',', ': ')}
-rms_db = TinyDB(rms_paths.db / "jobs.json", **format_json)
+FORMAT_JSON = {"sort_keys": True, "indent": 4, "separators": (',', ': ')}
+rms_db = TinyDB(rms_paths.db / "jobs.json", **FORMAT_JSON)
 history = InMemoryHistory()
 suggest = AutoSuggestFromHistory()
 hidden = ["prompt", "pprint", "not_found", "collect_options",
