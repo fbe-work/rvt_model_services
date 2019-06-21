@@ -61,11 +61,11 @@ else:
         doc = app.OpenDocumentFile(rvt_path, open_opt)
         print("  {:2}: openend: {}".format(i, str(datetime.now())))
         doc.SynchronizeWithCentral(trans_opt, sync_opt)
-        print("  {:2}: synced: {}".format(i, str(datetime.now())))
+        print("  {:2}: synced:  {}".format(i, str(datetime.now())))
         doc.Close()
 
         end = datetime.now()
-        print("  {:2}: closed: {}".format(i, str(end)))
+        print("  {:2}: closed:  {}".format(i, str(end)))
 
         timing_result = end - start
         timing_map[i] = timing_result.total_seconds()
@@ -105,6 +105,6 @@ if log_dir:
 if log_dir:
     log_file = os.path.join(log_dir, machine_name + "_" + project + "_benchmark_single_iteration_timing_" + benchmark_topic + ".csv")
     with open(log_file, "a") as csv_file:
-        for iternum, timing in timing_map.items():
-            csv_file.write("{};{};{}\n".format(time_now, iternum, timing))
+        for iter_num, timing in timing_map.items():
+            csv_file.write("{};{};{}\n".format(time_now, iter_num, timing))
 
