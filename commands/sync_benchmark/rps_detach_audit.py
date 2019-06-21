@@ -15,6 +15,8 @@ timing_map = defaultdict(float)
 time_now = str(datetime.now())
 info = ""
 app = __revit__.Application
+benchmark_topic = os.environ.get("RVT_SYNC_BENCHMARK") or ""
+machine_name = os.environ.get('COMPUTERNAME') or ""
 
 if "RVT_QC_PRJ" not in os.environ:
     print("no model specified")
@@ -68,6 +70,9 @@ else:
         timing_result = end - start
         timing_map[i] = timing_result.total_seconds()
 
+        print("  single run duration: {}".format(str(timing_result.total_seconds())))
+
+
 print(35*"=")
 print("iter:seconds")
 for iteration, timing in timing_map.items():
@@ -93,12 +98,12 @@ log_info += "average seconds:{};".format(average)
 log_info += "iterations:{};".format(iterations)
 
 if log_dir:
-    log_file = os.path.join(log_dir, project + "_benchmark_" + ".csv")
+    log_file = os.path.join(log_dir, machine_name, project + "_benchmark_" + benchmark_topic + ".csv")
     with open(log_file, "a") as csv_file:
         csv_file.write(log_info + "\n")
 
 if log_dir:
-    log_file = os.path.join(log_dir, project + "_benchmark_single_iteration_timing_" + ".csv")
+    log_file = os.path.join(log_dir, machine_name, project + "_benchmark_single_iteration_timing_" + benchmark_topic + ".csv")
     with open(log_file, "a") as csv_file:
         for iternum, timing in timing_map.items():
             csv_file.write("{};{};{}\n".format(time_now, iternum, timing))
