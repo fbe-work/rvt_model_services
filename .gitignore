@@ -10,6 +10,7 @@ commands/*
 !commands/audit_no_ws/
 !commands/rps_audit/
 !commands/cookiecutter/
+!commands/sync_benchmark/
 
 # ignore configs db and task xml except xml templates
 config.ini
