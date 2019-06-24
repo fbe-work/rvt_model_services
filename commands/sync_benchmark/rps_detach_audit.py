@@ -103,7 +103,7 @@ if log_dir:
         csv_file.write(log_info + "\n")
 
 if log_dir:
-    log_file = os.path.join(log_dir, machine_name + "_" + project + "_benchmark_single_iteration_timing_" + benchmark_topic + ".csv")
+    log_file = os.path.join(log_dir, machine_name + "_" + project + "_benchmark_" + benchmark_topic + "_single_iteration_timing_.csv")
     with open(log_file, "a") as csv_file:
         for iter_num, timing in timing_map.items():
             csv_file.write("{};{};{}\n".format(time_now, iter_num, timing))
