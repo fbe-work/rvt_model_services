@@ -40,8 +40,10 @@ here is an installation guide which might be useful:<br>
      * [installation details on file locations from Daren Thomas' gitbook](https://daren-thomas.gitbooks.io/scripting-autodesk-revit-with-revitpythonshell/content/installing_revitpythonshell_for_autodesk_revit/files_and_locations.html)
      * with the IT setup at our company I had to do the following on a win7 machine: <br>
         install RPS as Administrator, then copy the following files and folders with content over:<br>
-        - C:\Users\<InstallAdmin>\AppData\Roaming\RevitPythonShell201X -> C:\Users\<YourUserAccount>\AppData\Roaming\RevitPythonShell201X
-        - C:\Users\<InstallAdmin>\AppData\Roaming\Autodesk\Revit\Addins\201X\RevitPythonShell201X.addin -> C:\Users\<YourUserAccount>\AppData\Roaming\Autodesk\Revit\Addins\201X\RevitPythonShell201X.addin
+        * `C:\Users\<InstallAdmin>\AppData\Roaming\RevitPythonShell201X`
+           <br>-> `C:\Users\<YourUserAccount>\AppData\Roaming\RevitPythonShell201X`
+        * `C:\Users\<InstallAdmin>\AppData\Roaming\Autodesk\Revit\Addins\201X\RevitPythonShell201X.addin`
+            <br>-> `C:\Users\<YourUserAccount>\AppData\Roaming\Autodesk\Revit\Addins\201X\RevitPythonShell201X.addin`
 
 * install a console emulator that is both powerful and fun to use.<br>
     - cmder console emulator:<br>
