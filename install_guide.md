@@ -1,27 +1,41 @@
 # rvt_model_services python install guide
-since rvt_model_services relies on a bunch of awesome packages here is an installation guide which might be useful:<br>
+since rvt_model_services relies on a bunch of awesome packages,<br> 
+here is an installation guide which might be useful:<br>
 
 ## CPython:
-* install cpython 3.6: download Python 3.6.x installer from [python.org](https://www.python.org/) make sure you install it for all users if you need installation and rvt_model_services with different user privileges and make sure "add to path" ist selected. (recommended!)
-* the only tricky package could be numpy. in order to install it without too much hassle: download the precompiled version from this website: [lfd.uci.edu gohlke pythonlibs](http://www.lfd.uci.edu/~gohlke/pythonlibs/) then navigate with your command prompt to the download directoy and install it via "python -m pip install numpy‑1.13.0rc1+mkl‑cp36‑cp36m‑win_amd64.whl"
-* the other packages should not be problematic, they can be installed from this directory:<br>
+* install cpython 3.7 or higher: download Python the installer (64bit recommended)<br> 
+  from [python.org](https://www.python.org/) . make sure you install it for all users, 
+  if you need installation and rvt_model_services with different user privileges.<br>
+  ideally have "add to path" ist selected. (recommended!)
+* the python packages can be installed from this directory:<br>
   * either with the included requirements.txt:<br>
-    python -m pip install -r requirements.txt<br>
+    `python -m pip install --user -r requirements.txt`
   * or for each package individually:<br>
-    python -m pip install beautifulsoup4==4.6.0<br>
-    python -m pip install bokeh==0.12.4<br>
-    python -m pip install colorama==0.3.9<br>
-    python -m pip install colorful==0.4.0<br>
-    python -m pip install docopt==0.6.2<br>
-    python -m pip install numpy==1.12.1<br>
-    python -m pip install pandas==0.19.2<br>
-    python -m pip install psutil==5.2.2<br>
-    python -m pip install olefile=0.44<br>
+    `python -m pip install --user beautifulsoup4`    
+    `python -m pip install --user bokeh`             
+    `python -m pip install --user colorama`          
+    `python -m pip install --user colorful`          
+    `python -m pip install --user docopt`            
+    `python -m pip install --user numpy`             
+    `python -m pip install --user pandas`            
+    `python -m pip install --user psutil`            
+    `python -m pip install --user olefile`           
+    `python -m pip install --user slackclient==1.0.6`
+    `python -m pip install --user rvt_detector`      
+    `python -m pip install --user rjm`               
+    `python -m pip install --user tinydb`            
+    `python -m pip install --user prompt-toolkit`    
+    `python -m pip install --user requests`
 * check afterwards with a "pip list" if your installation process was successful<br>
-* optionally you could set this up in an virtual environment, but that is beyond the scope of this guide.
+* optionally/ideally you could set this up in an virtual environment, but that is beyond the scope of this guide.
 
-## RevitPythonShell
-* download the newest installer from the releases section from [github revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) <br>
+## Autodesk Revit®
+* regular install to the standard paths like these: 
+    - `C:\Program Files\Autodesk\Revit Architecture 2019`
+    - `C:\Program Files\Autodesk\Revit 2020`
+
+## not required but recommended:
+* RevitPythonShell: download the newest installer from the releases section from [github revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) <br>
     if you are stuck:
      * [installation details on file locations from Daren Thomas' gitbook](https://daren-thomas.gitbooks.io/scripting-autodesk-revit-with-revitpythonshell/content/installing_revitpythonshell_for_autodesk_revit/files_and_locations.html)
      * with the IT setup at our company I had to do the following on a win7 machine: <br>
@@ -29,12 +43,9 @@ since rvt_model_services relies on a bunch of awesome packages here is an instal
         - C:\Users\<InstallAdmin>\AppData\Roaming\RevitPythonShell201X -> C:\Users\<YourUserAccount>\AppData\Roaming\RevitPythonShell201X
         - C:\Users\<InstallAdmin>\AppData\Roaming\Autodesk\Revit\Addins\201X\RevitPythonShell201X.addin -> C:\Users\<YourUserAccount>\AppData\Roaming\Autodesk\Revit\Addins\201X\RevitPythonShell201X.addin
 
-## Autodesk Revit®
-* regular install to the standard paths like these: 
-    - C:\Program Files\Autodesk\Revit Architecture 2016
-    - C:\Program Files\Autodesk\Revit 2017
-
-## not required but recommended:
-* install a console emulator that is fun to use and combine Python and windows prompt: 
-    - cmder console emulator download from: [cmder webpage](http://cmder.net/)
-    - xonsh (via pip install xonsh)
+* install a console emulator that is both powerful and fun to use.<br>
+    - cmder console emulator:<br>
+        download from: [cmder webpage](http://cmder.net/) <br>
+        or install via [chocolatey.org](https://chocolatey.org/) : `choco install cmder`
+* maybe even combine Python and windows prompt: 
+    - xonsh: install via: `python3 -m pip install --user xonsh`
