@@ -8,10 +8,10 @@ python micro framework to process actions on revit models from cli/command line
   * if the journal file cannot be run to completion the subprocess is killed and an error is logged. the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
 
 ## it requires/is currently run on:
-  * cpython (64bit recommended) >= 3.6 (with additional modules)<br/>
+  * cpython (64bit recommended) >= 3.7 (with additional modules)<br/>
     to install modules on your machine run<br>
     `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient rvt_detector rjm`
-  * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2)
+  * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2, 2018, 2019.2, 2020.2)
   * see install_guide for help/further information.
 
 ## how to get started:
@@ -32,7 +32,7 @@ python micro framework to process actions on revit models from cli/command line
     so it could look like this:
     
     ```
-    "C:\Program Files\Python36\python.exe"
+    "C:\Program Files\Python37\python.exe"
     D:/testrun/934_rvt_model_services/process_model.py
     qc
     123_N
@@ -41,7 +41,7 @@ python micro framework to process actions on revit models from cli/command line
     ```
 
     Just concatenate it (put it into one line):<br>
-    `"C:\Program Files\Python36\python.exe" D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600` <br>
+    `"C:\Program Files\Python37\python.exe" D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600` <br>
     Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.<br>
     If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.<br>
     Here is how this looks on my screen:
@@ -56,7 +56,7 @@ python micro framework to process actions on revit models from cli/command line
         - set your start time<br>
         - action: start program:<br>
             Program/Script:<br>
-                "C:\Program Files\Python36\python.exe"<br>
+                "C:\Program Files\Python37\python.exe"<br>
             Add Arguments:<br>
                 D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600 <br>
         - Finish and test if it works: "Right-Click > Run"
@@ -115,8 +115,8 @@ python micro framework to process actions on revit models from cli/command line
 
 ## credits
  * Frederic Beaupere (original version, maintainer)
+ * Ehsan Iran-Nejad (creator of rvt_model_services embedded C# excecutor, creator of [pyRevit](https://github.com/eirannejad/pyRevit))
  * Daren Thomas (creator of [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell))
- * Ehsan Iran-Nejad (creator of [pyRevit](https://github.com/eirannejad/pyRevit))
  * Gui Talarico (creator of [revitpythonwrapper](https://github.com/gtalarico/revitpythonwrapper) and [revitapidocs](https://github.com/gtalarico/revitapidocs))
 
 note: If you are not on this list, but believe you should be, please contact me!
