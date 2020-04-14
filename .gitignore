@@ -1,15 +1,16 @@
 # ignore all commands except rvt_model_services built-in commands and cookiecutter template
 commands/*
-!commands/qc/
-!commands/qc_no_ws/
+!commands/audit/
+!commands/audit_no_ws/
+!commands/cookiecutter/
+!commands/detect_str_col_changes_no_ws/
 !commands/dwf/
 !commands/dwg/
 !commands/pulse/
-!commands/warnings/
-!commands/audit/
-!commands/audit_no_ws/
+!commands/qc/
+!commands/qc_no_ws/
 !commands/rps_audit/
-!commands/cookiecutter/
+!commands/warnings/
 !commands/sync_benchmark/
 
 # ignore configs db and task xml except xml templates
