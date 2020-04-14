@@ -17,7 +17,7 @@ def fetch_config(prj_number):
     return None, None, None
 
 
-def notify(prj_number, prj_path, journal_excerpt, subject="", text="", port=25):
+def notify(prj_number, prj_path, journal_excerpt, subject="", port=25):
     mail_server, mail_sender, mail_recipients = fetch_config(prj_number)
     if not subject:
         subject = "rvt model corrupt!!"
