@@ -24,6 +24,10 @@ db/xml_export/*.xml
 logs/*
 !logs/README.md
 
+# rvt_model_services data_dumps
+data_dumps/*
+!data_dumps/README.md
+
 # rvt_model_services warnings
 warnings/*
 !warnings/README.md
