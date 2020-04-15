@@ -19,7 +19,7 @@ def data_pickup_and_compare(project_code):
             found_data_dumps[node.name] = node
 
     if len(found_data_dumps) < 2:
-        print("not enough matching data dumps found")
+        print(" not enough matching data dumps found for comparison")
         return
 
     last_two_data_dumps = sorted(found_data_dumps)[-2:]
