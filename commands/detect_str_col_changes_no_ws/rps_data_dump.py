@@ -32,7 +32,7 @@ def collect_param_values(doc, element, parameter_names):
                 storage_type = param.StorageType.ToString()
                 if storage_type == "ElementId":
                     param_value = param.AsElementId().IntegerValue.ToString()
-                    if param_name == "Level":
+                    if param_name in elem_id_clear_value_params:
                         lvl_id = param.AsElementId()
                         if not lvl_id == ElementId.InvalidElementId:
                             param_value = doc.GetElement(param.AsElementId()).Name
@@ -126,6 +126,13 @@ def dump(doc, typed_categories=None, untyped_categories=None, export_path=None):
                 print(40 * "-")
     return exported_instances
 
+
+elem_id_clear_value_params = {
+    "Level",
+    "Top Constraint",
+    "Base Constraint",
+    "Base Level",
+}
 
 typical_typed_categories = [
     Bic.OST_Casework,
