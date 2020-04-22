@@ -5,6 +5,7 @@ from Autodesk.Revit.DB import FilteredElementCollector as Fec
 from Autodesk.Revit.DB import BuiltInCategory as Bic
 from Autodesk.Revit.DB import ElementId
 import os
+import re
 from datetime import datetime
 from collections import defaultdict, OrderedDict
 
@@ -55,12 +56,14 @@ def get_elem_location(element):
         return ""
 
 
-def dump(doc, typed_categories=None, untyped_categories=None, export_path=None):
+def dump(doc, typed_categories=None, untyped_categories=None, export_path=None, filters=None):
     """
     Writes element data for chosen categories, ids, location and params to specified csv
+    with the possibility to filter: e.g. {'type':{'Type Name':r"^[X][X]_.+"}}
     :param optional list of typed_categories: e.g. [BIC_Doors]
     :param optional list of untyped_categories: e.g. [BIC_Rooms]
     :param export_path: as path string e.g. "c:/temp/rvt_data_dump"
+    :param filters: dict of {'inst/type': {'param_name': 'regex_str_for_param_for_elems_to_keep'}}
     :return:
     """
     today_time = datetime.now().strftime("%Y%m%d_%H%M")
@@ -118,11 +121,28 @@ def dump(doc, typed_categories=None, untyped_categories=None, export_path=None):
 
                     if typing == "typed":
                         type_params_vals = collect_param_values(doc, inst_type, category_type_param_names[cat_name])
-                        info_line += ";".join([val for val in type_params_vals.values()])
+                        info_line += ";" + ";".join([val for val in type_params_vals.values()])
 
-                    cat_csv.write(info_line + "\n")
+                    match = False
+                    if filters:
+                        if filters.get('type'):
+                            for type_param_name_filter in  filters['type']:
+                                re_param = re.compile(filters['type'][type_param_name_filter])
+                                param_val = type_params_vals[type_param_name_filter]
+                                if re.match(re_param, param_val):
+                                    match = True
+                                    break
+                        elif filters.get('inst'):
+                            for inst_param_name_filter in  filters['inst']:
+                                re_param = re.compile(filters['inst'][inst_param_name_filter])
+                                param_val = inst_params_vals[type_param_name_filter]
+                                if re.match(re_param, param_val):
+                                    match = True
+                                    break
+                    if match:
+                        cat_csv.write(info_line + "\n")
+                        exported_instances[cat_name] += 1
 
-                    exported_instances[cat_name] += 1
                 print(40 * "-")
     return exported_instances
 
