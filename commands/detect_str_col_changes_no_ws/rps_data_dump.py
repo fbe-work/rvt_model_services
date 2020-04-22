@@ -107,7 +107,7 @@ def dump(doc, typed_categories=None, untyped_categories=None, export_path=None, 
                 header = ";".join([name for name in category_param_names[cat_name]])
                 type_header = ""
                 if typing == "typed":
-                    type_header = ";".join([name for name in category_type_param_names[cat_name]])
+                    type_header = ";" + ";".join([name for name in category_type_param_names[cat_name]])
 
                 cat_csv.write("rvt_id;GUID;location;" + header + type_header + "\n")
 
