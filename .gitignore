@@ -10,8 +10,9 @@ commands/*
 !commands/qc/
 !commands/qc_no_ws/
 !commands/rps_audit/
-!commands/warnings/
 !commands/sync_benchmark/
+!commands/warnings/
+!commands/upgrade/
 
 # ignore configs db and task xml except xml templates
 config.ini
