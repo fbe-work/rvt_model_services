@@ -6,6 +6,7 @@ commands/*
 !commands/detect_str_col_changes_no_ws/
 !commands/dwf/
 !commands/dwg/
+!commands/move/
 !commands/pulse/
 !commands/qc/
 !commands/qc_no_ws/
