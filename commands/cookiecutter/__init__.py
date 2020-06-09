@@ -1,21 +1,24 @@
+import datetime
 import rjm
-import os.path as op
+from pathlib import Path
 from . import cookie
 
 
 def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
-    op.basename(op.dirname(__file__))
-    coo_qc_dir = op.join(com_dir, op.basename(op.dirname(__file__)))
+    command_path = Path(__file__).parent
+    command_name = command_path.name
+    time_stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     rvt_jrn = rjm.JournalMaker()
     rvt_jrn.open_workshared_model(model_path=model_path, detached=True, audit=True)
     rvt_jrn.add_custom_entry(override_jrn_command.format(project_code))
-    com_data = {"SearchPaths": coo_qc_dir,
-                "ModelName": op.basename(model_path),
-                "OutputPath": log_dir,
-                "OutputPrefix": project_code,
-                "LogFile": op.join(log_dir, "rms_exec_results.log"),
-                "ScriptSource": op.join(coo_qc_dir, "rps_cookie.py"),
-                }
+    com_data = {
+        "SearchPaths": command_path,
+        "ModelName": model_path.name,
+        "OutputPath": log_dir,
+        "OutputPrefix": project_code,
+        "LogFile": log_dir / f"{time_stamp}_{command_name}_rms_exec_results.log",
+        "ScriptSource": command_path / "rps_cookie.py",
+    }
     rvt_jrn.execute_command(tab_name='Add-Ins',
                             panel_name='  Revit Model Services (RMS)  ',
                             command_module='RMSCmdExecutor',
@@ -28,8 +31,9 @@ def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
 
 override_jrn_command = """' A template to extend with journal functionality for project: {0}"""
 
-register = {"name": "cookiecutter",
-            "post_process": {"func": cookie.says_hi,
-                             "args": ["project_code"]},
-            "rjm": cmd_journal,
-            }
+register = {
+    "name": "cookiecutter",
+    "post_process": {"func": cookie.says_hi,
+                     "args": ["project_code"]},
+    "rjm": cmd_journal,
+}
