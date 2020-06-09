@@ -1,19 +1,21 @@
+import datetime
 import rjm
-import os.path as op
+from pathlib import Path
 from . import data_handler
 
 
 def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
-    op.basename(op.dirname(__file__))
-    coo_qc_dir = op.join(com_dir, op.basename(op.dirname(__file__)))
+    command_path = Path(__file__).parent
+    command_name = command_path.name
+    time_stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     rvt_jrn = rjm.JournalMaker()
     com_data = {
-        "SearchPaths": coo_qc_dir,
-        "ModelName": op.basename(model_path),
+        "SearchPaths": command_path,
+        "ModelName": model_path.name,
         "OutputPath": log_dir,
         "OutputPrefix": project_code,
-        "LogFile": op.join(log_dir, "rms_exec_results.log"),
-        "ScriptSource": op.join(coo_qc_dir, "rps_str_col_data_dump.py"),
+        "LogFile": log_dir / f"{time_stamp}_{command_name}_rms_exec_results.log",
+        "ScriptSource": command_path / "rps_str_col_data_dump.py",
     }
     rvt_jrn.execute_command(
         tab_name='Add-Ins',
