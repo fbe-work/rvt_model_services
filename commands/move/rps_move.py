@@ -23,7 +23,7 @@ dir_files = os.listdir(upgrade_dir)
 move_json_name = "move_models.json"
 move_json_path = os.path.join(upgrade_dir, move_json_name)
 if move_json_name not in dir_files:
-    print("missing move mapping definition 'move_models.json' - exiting.")
+    print("missing move mapping definition '{}' - exiting.".format(move_json_name))
     sys.exit()
 
 with open(move_json_path) as json_map:
