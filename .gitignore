@@ -10,6 +10,7 @@ commands/*
 !commands/pulse/
 !commands/qc/
 !commands/qc_no_ws/
+!commands/relink/
 !commands/rps_audit/
 !commands/sync_benchmark/
 !commands/warnings/
