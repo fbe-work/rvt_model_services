@@ -16,7 +16,7 @@ def cmd_journal(project_code, model_path, jrn_path, com_dir, log_dir):
         "OutputPath": log_dir,
         "OutputPrefix": project_code,
         "LogFile": log_dir / f"{time_stamp}_{command_name}_rms_exec_results.log",
-        "ScriptSource": command_path / "rps_detach_audit.py",
+        "ScriptSource": command_path / "rps_sync_benchmark.py",
     }
     rvt_jrn.execute_command(
         tab_name='Add-Ins',
