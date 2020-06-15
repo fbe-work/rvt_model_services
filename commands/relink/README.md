@@ -1,11 +1,12 @@
 # command: relink
 
 ## command description
-`relink` will search through the directory in which the rvt model is located, 
+`relink` will search through the directory, in which the rvt model is located, 
 that got specified when running the command and process each workshared or 
 standalone rvt model in there. 
-A mapping needs to be provided in this directory named: `relink_map.json`.
-With the following content:
+
+A mapping needs to be provided in this directory named: `relink_map.json`.<br>
+Example content:
 ```
 {
   "rvt": {
@@ -20,8 +21,15 @@ With the following content:
   }
 }
 ```
-It will list all the linked rvt and cad (dwg, sat) files in per model, 
-and will relink them according to the `relink_map.json` if it happens to match.
+It will list all the linked rvt and cad (dwg, sat) files in per model.
+If links happen to match they will be relinked them according to the 
+`relink_map.json`. <br>
+The example mapping shows rvt/dwg files with the specific name matching 
+`link_same_dir.rvt`/`link_same_dir.dwg`, that are linked to the same directory. 
+Links `link_nested.rvt`/`link_nested.dwg` specifically matching, and rvt/dwg 
+with only partly matching file names `partly_matched_link_name`, 
+that reside one directory up and from there two directories nested, 
+in `02_LINKED` and `15_STR`.
 
 Note that this will only have an effect on models, that are in transmitted state, 
 e.g. an eTransmitted rvt model.
