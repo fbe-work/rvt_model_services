@@ -21,5 +21,8 @@ Note that each model upgrade includes an audit performed by rvt.
 Existing model corruptions need to be resolved before being able to upgrade 
 a rvt model.
 
+## typical invocation
+`python process_model.py upgrade 123_UP "C:\temp\upgrade_test\123_upgrade.rvt" --rvt_ver=2019 --timeout=99999`
+
 ## logs
 All feedback of this process can be found in `rvt_model_services/logs`.
