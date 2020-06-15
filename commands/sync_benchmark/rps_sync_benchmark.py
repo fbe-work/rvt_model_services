@@ -6,6 +6,7 @@ from Autodesk.Revit.DB import FilePath
 from Autodesk.Revit.DB import WorksetConfiguration, WorksetConfigurationOption
 import System
 import os
+import sys
 from datetime import datetime
 from collections import defaultdict
 
@@ -18,59 +19,60 @@ app = __revit__.Application
 benchmark_topic = os.environ.get("RVT_SYNC_BENCHMARK") or ""
 machine_name = os.environ.get('COMPUTERNAME') or ""
 
-if "RVT_QC_PRJ" not in os.environ:
+if "RVT_QC_PATH" not in os.environ:
     print("no model specified")
+    sys.exit()
 
-else:
-    active_nic = ""
-    test_ip = "9.9.9.9"
-    udp_conn = System.Net.Sockets.UdpClient(test_ip, 1)
-    local_addr = udp_conn.Client.LocalEndPoint.Address
-    for nic in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces():
-        ip_props = nic.GetIPProperties()
-        for addr_info in ip_props.UnicastAddresses:
-            if local_addr.ToString() == addr_info.Address.ToString():
-                active_nic = nic.Description
 
-    project = os.environ["RVT_QC_PRJ"]
-    model_path = os.environ["RVT_QC_PATH"]
-    pc_stats = os.environ["pc_stats"]
-    rvt_path = FilePath(model_path)
+active_nic = ""
+test_ip = "9.9.9.9"
+udp_conn = System.Net.Sockets.UdpClient(test_ip, 1)
+local_addr = udp_conn.Client.LocalEndPoint.Address
+for nic in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces():
+    ip_props = nic.GetIPProperties()
+    for addr_info in ip_props.UnicastAddresses:
+        if local_addr.ToString() == addr_info.Address.ToString():
+            active_nic = nic.Description
 
-    ws_conf = WorksetConfiguration(WorksetConfigurationOption.CloseAllWorksets)
-    open_opt = OpenOptions()
-    open_opt.SetOpenWorksetsConfiguration(ws_conf)
+project = os.environ["RVT_QC_PRJ"]
+model_path = os.environ["RVT_QC_PATH"]
+pc_stats = os.environ["pc_stats"]
+rvt_path = FilePath(model_path)
 
-    sync_opt = SynchronizeWithCentralOptions()
-    relinquish_opt = RelinquishOptions(True)
-    sync_opt.SetRelinquishOptions(relinquish_opt)
-    sync_opt.SaveLocalAfter = True
-    # sync_opt.Compact = True
-    sync_opt.Comment = "syncing"
+ws_conf = WorksetConfiguration(WorksetConfigurationOption.CloseAllWorksets)
+open_opt = OpenOptions()
+open_opt.SetOpenWorksetsConfiguration(ws_conf)
 
-    trans_opt = TransactWithCentralOptions()
-    print(time_now)
-    print("machine stats:\n{}".format(pc_stats))
-    print(active_nic)
-    print("timing: {} {} times".format(model_path, iterations))
+sync_opt = SynchronizeWithCentralOptions()
+relinquish_opt = RelinquishOptions(True)
+sync_opt.SetRelinquishOptions(relinquish_opt)
+sync_opt.SaveLocalAfter = True
+# sync_opt.Compact = True
+sync_opt.Comment = "syncing"
 
-    for i in range(iterations):
-        start = datetime.now()
-        print("__{:2}: start: {}".format(i, start))
+trans_opt = TransactWithCentralOptions()
+print(time_now)
+print("machine stats:\n{}".format(pc_stats))
+print(active_nic)
+print("timing: {} {} times".format(model_path, iterations))
 
-        doc = app.OpenDocumentFile(rvt_path, open_opt)
-        print("  {:2}: openend: {}".format(i, str(datetime.now())))
-        doc.SynchronizeWithCentral(trans_opt, sync_opt)
-        print("  {:2}: synced:  {}".format(i, str(datetime.now())))
-        doc.Close()
+for i in range(iterations):
+    start = datetime.now()
+    print("__{:2}: start: {}".format(i, start))
 
-        end = datetime.now()
-        print("  {:2}: closed:  {}".format(i, str(end)))
+    doc = app.OpenDocumentFile(rvt_path, open_opt)
+    print("  {:2}: openend: {}".format(i, str(datetime.now())))
+    doc.SynchronizeWithCentral(trans_opt, sync_opt)
+    print("  {:2}: synced:  {}".format(i, str(datetime.now())))
+    doc.Close()
 
-        timing_result = end - start
-        timing_map[i] = timing_result.total_seconds()
+    end = datetime.now()
+    print("  {:2}: closed:  {}".format(i, str(end)))
 
-        print("  {:2}: single run duration: {}".format(i, str(timing_result.total_seconds())))
+    timing_result = end - start
+    timing_map[i] = timing_result.total_seconds()
+
+    print("  {:2}: single run duration: {}".format(i, str(timing_result.total_seconds())))
 
 
 print(35*"=")
@@ -98,12 +100,23 @@ log_info += "average seconds:{};".format(average)
 log_info += "iterations:{};".format(iterations)
 
 if log_dir:
-    log_file = os.path.join(log_dir, machine_name + "_" + project + "_benchmark_" + benchmark_topic + ".csv")
+    log_file = os.path.join(
+        log_dir,
+        "{}_{}_benchmark_{}.csv".format(
+            machine_name, project, benchmark_topic
+        )
+    )
     with open(log_file, "a") as csv_file:
         csv_file.write(log_info + "\n")
 
-if log_dir:
-    log_file = os.path.join(log_dir, machine_name + "_" + project + "_benchmark_" + benchmark_topic + "_single_iteration_timing_.csv")
+    log_file = os.path.join(
+        log_dir,
+        "{}_{}_benchmark_{}_single_iteration_timing_.csv".format(
+            machine_name,
+            project,
+            benchmark_topic
+        )
+    )
     with open(log_file, "a") as csv_file:
         for iter_num, timing in timing_map.items():
             csv_file.write("{};{};{}\n".format(time_now, iter_num, timing))
