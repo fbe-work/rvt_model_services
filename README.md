@@ -3,9 +3,11 @@ python micro framework to process actions on revit models from cli/command line
 
 ## how it works:
   * you initialize it with a command to process_model.py specifying the task, revit model and an optional timeout.
-  * process_model.py will spin off a subprocess to write a journal file and addin according to your specified task and project.
-  * it will then run Revit according to this journal file, opening a detached version of your model and run the specified action like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
-  * if the journal file cannot be run to completion the subprocess is killed and an error is logged. the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
+  * process_model.py will spin off a subprocess to write a journal file and add-in according to your specified task and project.
+  * it will then run Revit according to this journal file, opening a detached version of your model and run the specified action, 
+  like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
+  * if the journal file cannot be run to completion the subprocess is killed and an error is logged. 
+  the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
 
 ## it requires/is currently run on:
   * cpython (64bit recommended) >= 3.7 (with additional modules)<br/>
@@ -15,7 +17,8 @@ python micro framework to process actions on revit models from cli/command line
   * see install_guide for help/further information.
 
 ## how to get started:
-  * when the above mentioned requirements are met and this repo is cloned to your preferred path lets get started with a common task (read qc stats (qc meaning "quality check" in this context)) in a few steps:
+  * when the above mentioned requirements are met and this repo is cloned to your preferred path, 
+  let's get started with a common task (read qc stats (qc meaning "quality check" in this context)) in a few steps:
 
   * run a qc read out from cli<br>
     run process_model.py from command line:
@@ -41,12 +44,12 @@ python micro framework to process actions on revit models from cli/command line
     ```
 
     Just concatenate it (put it into one line):<br>
-    `"C:\Program Files\Python37\python.exe" D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600` <br>
+    `"C:\Program Files\Python37\python.exe" D:/testrun/934_rvt_model_services/process_model.py qc 123_N D:/testmodel/123_N.rvt --timeout 600`<br>
     Open a command line ("Win > type 'cmd'") paste it in("right-click > paste") and run it.<br>
     If you want to write the html to another directory you can use the optional switch "--html_path" followed by a path.<br>
     Here is how this looks on my screen:
 
-    ![cmder_screenshot][cmder_02]
+    ![cmder_screenshot](docs/img/cmder_02.png)
 
   * step 2: let task scheduler repeat your task<br>
     for recurring tasks hook it up to Windows® task scheduler:
@@ -68,7 +71,7 @@ python micro framework to process actions on revit models from cli/command line
     [123_N]
     path = D:/testmodel/123_N.rvt
     ```
-    With this setup you can substitue the actual full_model_path in your command with just: `cfg`
+    With this setup you can substitute the actual full_model_path in your command with just: `cfg`
     
   * If you want to get notified on model corruption or circular links just add the flag `--notify`
     to setup notifications (currently email or slack) refer to the README.md of the notify module.
@@ -79,30 +82,57 @@ python micro framework to process actions on revit models from cli/command line
   * export of DWF, DWG, PDF or IFC (so far only DWF export implemented)
   * export model warnings (API-less journal file warnings export)
 
-## currently implemented tasks:
-  * qc: rvt model qc statistics on workshared models<br>
+## currently implemented commands:
+  * [qc](commands/qc):<br>
+    rvt model qc statistics on workshared models<br>
 
-    ![qc_elements_graph][qc_01]
+    ![qc_elements_graph](docs/img/qc_01.png)
 
-  * dwf: dwf sheet exports of sheet set "Auto_PDF_DWF" on workshared models<br>
-  * warnings: model warnings export on workshared models<br>
+  * [qc_no_ws](commands/qc_no_ws):<br>
+    same as the above without opening model worksets
 
-    ![warnings_graph][warnings_01]
+  * [dwf](commands/dwf):<br>
+    dwf sheet exports of sheet set "Auto_PDF_DWF" on workshared models<br>
 
-  * pulse: bokeh graph showing the job log graphically(which project was process in what time, did it timeout -> red bar).<br>
+  * [dwg](commands/dwg):<br>
+    dwf sheet exports of sheet set "Auto_PDF_DWF" on workshared models<br>
+
+  * [warnings](commands/warnings):<br>
+    model warnings export on workshared models, pre-rvt2018<br>
+
+    ![warnings_graph](docs/img/warnings_01.png)
+
+  * [pulse](commands/pulse):<br>
+    bokeh graph showing the job log graphically(which project was process in what time, did it timeout -> red bar).<br>
     run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
 
-    ![pulse_graph][pulse_01]
+    ![pulse_graph](docs/img/pulse_01.png)
 
-  * audit: bokeh graph showing the rusult of models being opened with "audit".<br>
+  * [audit](commands/audit):<br>
+    bokeh graph showing the rusult of models being opened with "audit".<br>
     if configured an email will be sent if the model is corrupt. see readme for email config guide in notify/email/<br>
     success: green, unclassified error:orange, corrupt model: red.<br>
     run separately from process_model with: "python bokeh_pulse.py" from commands/pulse/ directory.
 
-    ![pulse_graph][audit_pulse_01]
+    ![pulse_graph](docs/img/audit_pulse_01.png)
+
+  * [audit_no_ws](commands/audit_no_ws):<br>
+    same as the above without opening model worksets
+    
+  * [relink](commands/relink/README.md): 
+    relinks rvt and cad links of models in transmitted model state
+
+  * [upgrade](commands/upgrade/README.md): 
+    upgrades rvt models
+
+  * [move](commands/move/README.md): 
+    moves rvt models to target locations
 
 ## how to extend:
-  * rvt_model_services was created with extendibility in mind. if you wish to extend the functionality, just copy cookiecutter command and adjust or override.
+  * rvt_model_services was created with extensibility in mind. 
+  if you wish to extend the functionality, just copy cookiecutter 
+  command and adjust or override. As non-built-in commands are .gitignored, 
+  your custom commands should not break your vcs.
 
 ## limitations:
   - of journal files:
@@ -115,7 +145,7 @@ python micro framework to process actions on revit models from cli/command line
 
 ## credits
  * Frederic Beaupere (original version, maintainer)
- * Ehsan Iran-Nejad (creator of rvt_model_services embedded C# excecutor, creator of [pyRevit](https://github.com/eirannejad/pyRevit))
+ * Ehsan Iran-Nejad (creator of rvt_model_services embedded C# [excecutor](executor), creator of [pyRevit](https://github.com/eirannejad/pyRevit))
  * Daren Thomas (creator of [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell))
  * Gui Talarico (creator of [revitpythonwrapper](https://github.com/gtalarico/revitpythonwrapper) and [revitapidocs](https://github.com/gtalarico/revitapidocs))
 
@@ -123,9 +153,3 @@ note: If you are not on this list, but believe you should be, please contact me!
 
 ## license
 [MIT](https://opensource.org/licenses/MIT)
-
-[cmder_02]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/cmder_02.png "cmder_screenshot"
-[qc_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/qc_01.png "qc_elements"
-[warnings_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/warnings_01.png "warnings_graph"
-[pulse_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/pulse_01.png "pulse_graph"
-[audit_pulse_01]: https://github.com/hdm-dt-fb/rvt_model_services/raw/master/docs/img/audit_pulse_01.png "audit_pulse_graph"
