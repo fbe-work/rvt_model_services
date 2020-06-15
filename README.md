@@ -3,16 +3,16 @@ Python micro framework to process actions on revit models from cli/command line
 
 ## how it works:
   * You initialize it with a command to process_model.py specifying the task, revit model and an optional timeout.
-  * process_model.py will spin off a subprocess to write a journal file and add-in according to your specified task and project.
+  * `process_model.py` will spin off a subprocess to write a journal file and add-in according to your specified task and project.
   * It will then run Revit according to this journal file, opening a detached version of your model and run the specified action, 
   like a [revitpythonshell](https://github.com/architecture-building-systems/revitpythonshell) script.
-  * If the journal file cannot be run to completion the subprocess is killed and an error is logged. 
-  the logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
+  * If the journal file cannot be run to completion, the subprocess is killed and an error is logged.<br>
+  The logging journal file will be parsed and a notify email will inform you in case the model is corrupt.
 
 ## it requires/is currently run on:
   * CPython (64bit recommended) >= 3.7 (with additional modules)<br/>
     to install modules on your machine run<br>
-    `pip install beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient rvt_detector rjm`
+    `pip install --user beautifulsoup4 bokeh colorama colorful docopt numpy pandas psutil olefile slackclient rvt_detector rjm`
   * Autodesk Revit® (currently tested on versions 2015.7, 2016.2, 2017.2, 2018, 2019.2, 2020.2)
   * see [install_guide](install_guide.md) for help/further information.
 
@@ -20,17 +20,17 @@ Python micro framework to process actions on revit models from cli/command line
   * When the above mentioned requirements are met and this repo is cloned to your preferred path, 
   let's get started with a common task (read qc stats (qc meaning "quality check" in this context)) in a few steps:
 
-  * Wun a qc read out from cli<br>
+  * step 1: Run a qc read out from cli<br>
     Run `process_model.py` from command line:
     Now we can run the qc_model without even touching Revit and get interactive html graphs produced.
     Compose a command line instruction consisting of the following:
 
-    your CPython interpreter<br>
-    your path to process_model.py<br>
-    command type<br>
-    project name<br>
-    full path to the project Revit model<br>
-    a timeout for the process (optional - default is 60 seconds)<br>
+    `your CPython interpreter`<br>
+    `your path to process_model.py`<br>
+    `command name`<br>
+    `project name`<br>
+    `full path to the project Revit model`<br>
+    `a timeout for the process (optional - default is 60 seconds)`<br>
 
     So it could look like this:
     
@@ -81,6 +81,7 @@ Python micro framework to process actions on revit models from cli/command line
   * Check on model corruption with audit canary
   * Export of DWF, DWG, PDF or IFC (so far only DWF export implemented)
   * Export model warnings (API-less journal file warnings export)
+  * Migrating large heavily inter-linked Revit projects to different directories and/or Revit versions.
 
 ## currently implemented commands:
   * [qc](commands/qc):<br>
