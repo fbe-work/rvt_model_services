@@ -5,7 +5,7 @@
 that got specified when running the command and process each workshared or 
 standalone rvt model in there. 
 
-A mapping needs to be provided in this directory named: `relink_map.json`.<br>
+A mapping needs to be provided in this directory: `relink_map.json`.<br>
 Example content:
 ```
 {
