@@ -21,7 +21,7 @@ Example content:
   }
 }
 ```
-It will list all the linked rvt and cad (dwg, sat) files in per model.
+`relink` will list all the linked rvt and cad (dwg, sat) files in per model.
 If links happen to match they will be relinked them according to the 
 `relink_map.json`. <br>
 The example mapping shows rvt/dwg files with the specific name matching 
