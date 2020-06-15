@@ -16,5 +16,8 @@ Example content:
 If model links happen to match, they will be moved according to the 
 `move_models.json` mapping, as specified: **source_path:target_path** 
 
+## typical invocation
+`python process_model.py move 123_MV "C:\temp\move\123_move.rvt" --timeout=99999`
+
 ## logs
 All feedback of this process can be found in `rvt_model_services/logs`.
