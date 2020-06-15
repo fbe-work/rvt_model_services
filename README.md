@@ -119,13 +119,13 @@ python micro framework to process actions on revit models from cli/command line
   * [audit_no_ws](commands/audit_no_ws):<br>
     same as the above without opening model worksets
     
-  * [relink](commands/relink/README.md): 
+  * [relink](commands/relink): 
     relinks rvt and cad links of models in transmitted model state
 
-  * [upgrade](commands/upgrade/README.md): 
+  * [upgrade](commands/upgrade): 
     upgrades rvt models
 
-  * [move](commands/move/README.md): 
+  * [move](commands/move): 
     moves rvt models to target locations
 
 ## how to extend:
