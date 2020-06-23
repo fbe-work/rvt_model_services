@@ -17,7 +17,6 @@ import colorful
 
 
 # TODO adjust existing job
-# TODO functions with preset arg
 
 
 def exit():
@@ -133,8 +132,11 @@ def remove_db_job_by_id(preset=None):
     """
     removes rms job from db by id
     """
-    print("  please enter job_id to remove from db")
-    job_id = prompt("> remove_job_by_db_id> ", **sub_prompt_options)
+    if preset:
+        job_id = preset
+    else:
+        print("  please enter job_id to run")
+        job_id = prompt("> run_job_by_db_id> ", **sub_prompt_options)
     job_id = int(job_id)
     job = rms_db.get(doc_id=job_id)
     if job:
@@ -171,21 +173,24 @@ def run_db_job_by_id(preset=None):
     """
     runs a job from database by id
     """
-    print("  please enter job_id to run")
     if preset:
-        print(preset)
-        return
+        job_id = preset
     else:
+        print("  please enter job_id to run")
         job_id = prompt("> run_job_by_db_id> ", **sub_prompt_options)
     if job_id:
         job_id = int(job_id)
         job = rms_db.get(doc_id=job_id)
         if job:
+            # print(job)
             cmd_tokens = serdes(job=job)
+            # print(cmd_tokens)
             cmd_str = " ".join(cmd_tokens)
             if check_model_path(job_id):
-                print(cmd_str)
+                print("cmd_str:", cmd_str)
                 subprocess.Popen(cmd_str)
+    else:
+        print("  no job with this id found")
 
 
 def check_model_path(job_id):
@@ -288,11 +293,12 @@ def serdes(job=None, cmd_tokens=None):
     serialize/deserialize job/commands hidden
     """
     if job:
-        command = [sys.executable, str(rms_paths.root / "process_model.py")]
-        command.extend([job["<command>"],
-                        job["<project_code>"],
-                        job["<full_model_path>"],
-                        ])
+        command = [f'"{sys.executable}"', f'"{rms_paths.root / "process_model.py"}"']
+        command.extend([
+            job["<command>"],
+            job["<project_code>"],
+            job["<full_model_path>"],
+        ])
         for k, v in job.items():
             if k.startswith("<"):
                 # print("arg: {} {}".format(k, v))
@@ -306,7 +312,10 @@ def serdes(job=None, cmd_tokens=None):
                 # print("simple option: {} {}".format(k, v))
             else:
                 # command = " ".join([command, " ".join(["--" + k, str(v)])])
-                command.extend([" ".join(["--" + k, str(v)])])
+                if "path" in k:
+                    command.extend([" ".join(["--" + k, str(v).replace("'", '"')])])
+                else:
+                    command.extend([" ".join(["--" + k, str(v)])])
                 # print("regular option: {} {}".format(k, str(v)))
         # print(command)
         return command
@@ -416,33 +425,49 @@ FORMAT_JSON = {"sort_keys": True, "indent": 4, "separators": (',', ': ')}
 rms_db = TinyDB(rms_paths.db / "jobs.json", **FORMAT_JSON)
 history = InMemoryHistory()
 suggest = AutoSuggestFromHistory()
-hidden = ["prompt", "pprint", "not_found", "collect_options",
-          "collect_arguments", "serdes", "list_jobs",
-          "check_model_path", "test_collected", "style_from_dict",
-          "get_paths", "update_graph"
-          ]
+hidden = [
+    "prompt", "pprint", "not_found", "collect_options",
+    "collect_arguments", "serdes", "list_jobs",
+    "check_model_path", "test_collected", "style_from_dict",
+    "get_paths", "update_graph"
+]
 implemented = {key: val for key, val in globals().items()
                if isinstance(val, types.FunctionType)
                and key not in hidden}
 completer = WordCompleter([fn for fn in implemented.keys()])
 
-prompt_options = dict(history=history,
-                      auto_suggest=suggest,
-                      completer=completer,
-                      )
+prompt_options = dict(
+    history=history,
+    auto_suggest=suggest,
+    completer=completer,
+)
 
-sub_prompt_options = dict(history=history,
-                          auto_suggest=suggest,
-                          completer=completer,
-                          )
+sub_prompt_options = dict(
+    history=history,
+    auto_suggest=suggest,
+    completer=completer,
+)
 
 print("welcome to revit model services job controller.")
 print("to list all functionality enter 'help'.")
 
 while True:
     typed = prompt('> ', **prompt_options)
-    if implemented.get(typed):
-        perform = implemented.get(typed)
-        perform()
+    if not typed:
+        continue
+    if typed.startswith("#"):
+        continue
+    if len(typed.split()) == 2:
+        tokens = typed.split()
+        func_name = tokens[0]
+        arg = tokens[1]
+        if implemented.get(func_name):
+            perform = implemented.get(func_name)
+            perform(preset=arg)
+        continue
     else:
-        not_found(echo=typed)
+        if implemented.get(typed):
+            perform = implemented.get(typed)
+            perform()
+            continue
+    not_found(echo=typed)
