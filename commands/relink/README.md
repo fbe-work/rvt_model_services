@@ -35,7 +35,7 @@ Note that this will only have an effect on models, that are in transmitted state
 e.g. an eTransmitted rvt model.
 
 ## typical invocation
-`python process_model.py relink 123_RL "C:\temp\relink\123_relink.rvt" --rvt_ver=2019 --timeout=99999`
+`python process_model.py relink 123_RL "C:\temp\relink\123_relink.rvt" --timeout=99999`
 
 ## logs
 All feedback of this process can be found in `rvt_model_services/logs`.
