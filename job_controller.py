@@ -17,6 +17,7 @@ import colorful
 
 
 # TODO adjust existing job
+# TODO self-explaining collection of args and options
 
 
 def exit():
@@ -204,12 +205,15 @@ def check_model_path(job_id):
         print(colorful.bold_red(f"  could not find model at: {model_path}"))
 
 
-def check_db_job_model_path_by_id():
+def check_db_job_model_path_by_id(preset=None):
     """
     checks path of a model by job id
     """
-    print("  please enter job_id to check path of model")
-    job_id = prompt("> check_db_job_model_path_by_id> ", **sub_prompt_options)
+    if preset:
+        job_id = preset
+    else:
+        print("  please enter job_id to check for specific path, enter to check all paths")
+        job_id = prompt("> check_model_path_exists_by_db_id> ", **sub_prompt_options)
     if job_id:
         check_model_path(job_id)
     else:
@@ -262,7 +266,9 @@ def write_jobs_graph():
     update_graph(rms_db, rms_paths.db / "rms_jobs_timing.html")
 
 
-def collect_options(collector=list(), prompt_text='>> '):
+def collect_options(collector=None, prompt_text='>> '):
+    if not collector:
+        collector = []
     # print(f"called collect_options with: {collector}")
     collected = prompt(prompt_text, **sub_prompt_options)
     # print(collector)
