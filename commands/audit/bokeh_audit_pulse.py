@@ -10,6 +10,7 @@ Options:
 
 from docopt import docopt
 from collections import defaultdict
+import datetime
 import os.path as op
 from math import pi
 import pandas as pd
@@ -67,7 +68,11 @@ pd.set_option('display.width', 1800)
 df = pd.read_csv(csv_path, sep=";", index_col=False)
 df["time_stamp"] = pd.to_datetime(df["time_stamp"], format="%Y-%m-%d")
 
-df_paired = pd.concat([group for _, group in df.copy().groupby("process_hash") if len(group) > 1])
+age_threshold = datetime.timedelta(days=60)
+df_threshold = pd.to_datetime(datetime.datetime.now().date() - age_threshold, utc=True)
+cropped_df = df.loc[df.time_stamp > df_threshold]
+
+df_paired = pd.concat([group for _, group in cropped_df.copy().groupby("process_hash") if len(group) > 1])
 
 df_paired["offset_timestamp"] = df_paired.time_stamp.shift(1)
 df_paired["args"] = df_paired.args.shift(1)
