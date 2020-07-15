@@ -20,9 +20,9 @@ import colorful
 # TODO self-explaining collection of args and options
 
 
-def exit():
+def exit_job_controller():
     """
-    exits the program
+    exits the job_controller
     """
     print("  exiting..")
     sys.exit()
@@ -86,8 +86,8 @@ def list_jobs(filter_prj=None, filter_cmd=None, by_id=None):
         if filter_prj:
             db_results = [r for r in db_results if filter_prj in r["<project_code>"]]
     if db_results:
-        print(colorful.cyan("id".rjust(4)),
-              colorful.cyan("project_code".ljust(12)),
+        print(colorful.cyan("id".rjust(6)),
+              colorful.cyan("project_code".ljust(18)),
               colorful.cyan("command".ljust(14)),
               colorful.cyan("start_time".rjust(12)),
               colorful.cyan("timeout".rjust(8)),
@@ -97,8 +97,8 @@ def list_jobs(filter_prj=None, filter_cmd=None, by_id=None):
             job_timeout = job.get("timeout")
             if not job_timeout:
                 job_timeout = 60
-            print(str(job_id).rjust(4),
-                  job["<project_code>"].ljust(12),
+            print(str(job_id).rjust(6),
+                  job["<project_code>"].ljust(18),
                   job["<command>"].ljust(14),
                   job[">start_time"].rjust(12),
                   str(job_timeout).rjust(8),
